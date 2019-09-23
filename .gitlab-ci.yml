@@ -20,7 +20,8 @@ create-aws-environment:
   environment:
       name: test
   variables:
-      GIT_STRATEGY: clone
+      GIT_STRATEGY: none
   script:
+      - set -x
       - aws ec2 descibe-regions
-      - eksctl get clusters
+      - eksctl get clustsers
