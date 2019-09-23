@@ -23,5 +23,5 @@ create-aws-environment:
       GIT_STRATEGY: none
   script:
       - set -x
-      - aws ec2 descibe-regions
+      - aws ec2 describe-regions
       - eksctl get clustsers
