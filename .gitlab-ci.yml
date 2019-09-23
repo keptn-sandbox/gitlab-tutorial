@@ -1,0 +1,26 @@
+#
+# Dynatrace Demo CI/CD Pipeline
+#
+
+#################################################################
+# Global Variables
+#################################################################
+variables:
+  APPLICATION_NAME: sample-app
+
+stages:
+  - aws
+
+#################################################################
+# Deploy stage
+#################################################################
+create-aws-environment:
+  stage: aws
+  image: registry.gitlab.com/checkelmann/cicd-tools:latest
+  environment:
+      name: test
+  variables:
+      GIT_STRATEGY: clone
+  script:
+      - aws ec2 descibe-regions
+      - eksctl get clusters
