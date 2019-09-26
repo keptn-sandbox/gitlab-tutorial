@@ -33,7 +33,7 @@ create-aws-environment:
 
 deploy_oneagent:
   stage: configure-dynatrace
-  extends: -dt_deploy-eks-oneagent
+  extends: .dt_deploy-eks-oneagent
   environment:
     name: test
   when: manual
