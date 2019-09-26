@@ -8,20 +8,32 @@
 variables:
   APPLICATION_NAME: sample-app
 
+include: 
+  - local: 'ci-includes/dt_deploy-eks-oneagent'
+
+
 stages:
-  - aws
+  - aws-eks-provisioning
+  - configure-dynatrace
 
 #################################################################
-# Deploy stage
+# Provisioning Stage
 #################################################################
 create-aws-environment:
-  stage: aws
+  stage: aws-eks-provisioning
   image: registry.gitlab.com/checkelmann/cicd-tools:latest
   environment:
       name: test
   variables:
       GIT_STRATEGY: none
   script:
-      - set -x
       - aws ec2 describe-regions
       - eksctl get clustsers
+  when: manual
+
+deploy_oneagent:
+  stage: configure-dynatrace
+  extends: -dt_deploy-eks-oneagent
+  environment:
+    name: test
+  when: manual
