@@ -9,7 +9,7 @@ variables:
   APPLICATION_NAME: sample-app
 
 include: 
-  - local: 'ci-includes/dt_deploy-eks-oneagent'
+  - local: 'ci-includes/dt_deploy-eks-oneagent.yml'
 
 
 stages:
