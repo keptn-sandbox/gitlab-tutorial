@@ -5,12 +5,16 @@
 #################################################################
 # Global Variables
 #################################################################
-variables:
-  APPLICATION_NAME: sample-app
-
-include: 
-  - local: 'ci-includes/dt_deploy-eks-oneagent.yml'
-
+#################################################################
+# Include necessary Templates 
+#################################################################
+include:  
+  - project: 'checkelmann/dynatrace-pipeline'
+    ref: master
+    file: '/ci-includes/dt_deploy-eks-oneagent.yml'
+  - project: 'checkelmann/dynatrace-pipeline'
+    ref: master
+    file: '/ci-includes/dt_configure_tenant.yml'
 
 stages:
   - aws-eks-provisioning
@@ -22,8 +26,6 @@ stages:
 create-aws-environment:
   stage: aws-eks-provisioning
   image: registry.gitlab.com/checkelmann/cicd-tools:latest
-  environment:
-      name: test
   variables:
       GIT_STRATEGY: none
   script:
@@ -35,9 +37,9 @@ create-aws-environment:
       - helm install incubator/aws-alb-ingress-controller --set autoDiscoverAwsRegion=true --set autoDiscoverAwsVpcID=true --set clusterName=dynatrace-demo
   when: manual
 
-deploy_oneagent:
-  stage: configure-dynatrace
-  extends: .dt_deploy-eks-oneagent
-  environment:
-    name: test
-  when: manual
+#deploy_oneagent:
+#  stage: configure-dynatrace
+#  extends: .dt_deploy-eks-oneagent
+#  environment:
+#    name: test
+#  when: manual
