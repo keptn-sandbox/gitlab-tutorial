@@ -1,0 +1,30 @@
+{
+  "name": "deployment_group",
+  "rules": [
+    {
+      "type": "SERVICE",
+      "enabled": true,
+      "valueFormat": "{ProcessGroup:Environment:DEPLOYMENT_GROUP_NAME}",
+      "propagationTypes": [],
+      "conditions": [
+        {
+          "key": {
+            "attribute": "PROCESS_GROUP_CUSTOM_METADATA",
+            "dynamicKey": {
+              "source": "ENVIRONMENT",
+              "key": "DEPLOYMENT_GROUP_NAME"
+            },
+            "type": "PROCESS_CUSTOM_METADATA_KEY"
+          },
+          "comparisonInfo": {
+            "type": "STRING",
+            "operator": "EXISTS",
+            "value": null,
+            "negate": false,
+            "caseSensitive": null
+          }
+        }
+      ]
+    }
+  ]
+}
