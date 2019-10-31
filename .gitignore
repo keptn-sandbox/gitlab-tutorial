@@ -1,0 +1,3 @@
+aws.kubeconfig
+cert.pem
+temp/

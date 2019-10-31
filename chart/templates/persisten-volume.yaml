@@ -1,0 +1,16 @@
+{{- if .Values.persistentVolume.enabled -}}
+{{- $fullName := include "application.fullname" . -}}
+{{- range $data := .Values.persistentVolume.volumes -}}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+ name: {{ $fullName }}-{{ $data.volumeName }}
+spec:
+ accessModes:
+  - ReadWriteOnce
+ resources:
+   requests:
+     storage: {{ $data.size }}
+{{ end -}}
+{{- end -}}

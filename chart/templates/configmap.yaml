@@ -1,0 +1,11 @@
+{{- if .Values.configmap.enabled -}}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "application.fullname" . }}
+  labels:
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+data:
+  {{ .Values.configmap.data }}
+{{- end }}

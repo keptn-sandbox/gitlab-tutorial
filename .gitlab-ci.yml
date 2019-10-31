@@ -27,8 +27,12 @@ create-aws-environment:
   variables:
       GIT_STRATEGY: none
   script:
-      - aws ec2 describe-regions
-      - eksctl get clustsers
+      - eksctl create cluster --config-file assets/cluster.yml --kubeconfig aws.kubeconfig
+      - export KUBECONFIG=./aws.kubeconfig
+      - kubectl apply -f assets/helm-rbac.yml
+      - helm init --service-account tiller
+      - helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
+      - helm install incubator/aws-alb-ingress-controller --set autoDiscoverAwsRegion=true --set autoDiscoverAwsVpcID=true --set clusterName=dynatrace-demo
   when: manual
 
 deploy_oneagent:

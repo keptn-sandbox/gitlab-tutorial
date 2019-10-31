@@ -1,0 +1,78 @@
+# Default values for boilerplate.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 2
+
+image:
+  repository: registry.gitlab.com/checkelmann/dynatrace-pipeline
+  tag: latest
+  pullPolicy: Always
+
+imagePullSecrets: 
+  #- name: xyz  
+
+# To Support GitLab K8S Detection, you need to pass this CI variables
+# Best place for this is as command line parameter
+ci_environment_slug: "test"
+ci_project_path_slug: "dynatrace-pipeline"
+ci_job_id: "1234"
+
+nameOverride: ""      
+fullnameOverride: ""
+
+probes:
+  livenessProbe:
+    httpGet:
+      path: /service/ping
+      port: http
+  readinessProbe:
+    httpGet:
+      path: /service/ping
+      port: http
+
+service:
+  type: LoadBalancer
+  port: 5000
+
+ingress:
+  enabled: true
+
+resources: 
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+###############################################################################################
+# Add persistent volume 
+###############################################################################################
+persistentVolume:
+  enabled: false       # If not used, set this value to false
+  volumes:
+    - volumeName: myvol
+      mount: /mymount
+      size: 1Gi
+    - volumeName: secondvol
+      mount: /secmount
+      size: 2Gi
+
+###############################################################################################
+# Add configmap
+###############################################################################################
+configmap:
+  enabled: false
+  data: |
+    this is my configmap string
+      With a second line
+
+###############################################################################################
+# Add autoscaling
+###############################################################################################
+autoscale:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 80
