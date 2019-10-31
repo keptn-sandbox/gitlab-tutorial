@@ -1,0 +1,87 @@
+dt_create_synthetic_check:
+  image: registry.gitlab.com/checkelmann/cicd-tools:latest
+  stage: deploy
+  variables:
+      GIT_STRATEGY: none
+  script: |
+    export HEALTHENDPOINT=$(helm get ${APPLICATION_SHORT_NAME}|grep readinessProbe -A2|tail -n 1|awk '{print $2}')
+    # export INGRESSHOST=$(helm get ${APPLICATION_SHORT_NAME}|grep "host:"| head -1|awk '{print $3}')
+    export INGRESSHOST=$(kubectl get ingress/sample-app|tail -1|awk {'print $3'})
+    API="https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/synthetic"
+    ENDPOINT="http://${INGRESSHOST}/${HEALTHENDPOINT}"
+    json_payload="
+      {
+      \"frequencyMin\": 15,
+      \"anomalyDetection\": {
+        \"outageHandling\": {
+          \"globalOutage\": true,
+          \"localOutage\": false,
+          \"localOutagePolicy\": {
+            \"affectedLocations\": 1,
+            \"consecutiveRuns\": 3
+          }
+        },
+        \"loadingTimeThresholds\": {
+          \"enabled\": false,
+          \"thresholds\": [
+            {
+              \"type\": \"TOTAL\",
+              \"valueMs\": 10000
+            }
+          ]
+        }
+      },
+      \"type\": \"HTTP\",
+      \"name\": \"${CI_ENVIRONMENT_SLUG} - ${APPLICATION_SHORT_NAME} - Ping\",
+      \"locations\": [
+        \"SYNTHETIC_LOCATION-XYZ\",
+        \"SYNTHETIC_LOCATION-XYZ\"
+      ],
+      \"enabled\": true,
+      \"script\": {
+        \"version\": "1.0",
+        \"requests\": [
+          {
+            \"description\": \"${APPLICATION_SHORT_NAME}\",
+            \"url\": \"${ENDPOINT}\",
+            \"method\": \"GET\",
+            \"requestBody\": \"\",
+            \"configuration\": {
+              \"acceptAnyCertificate\": true,
+              \"followRedirects\": true
+            },
+            \"preProcessingScript\": \"\",
+            \"postProcessingScript\": \"\"
+          }
+        ]
+      },
+      \"tags\": [
+        \"environment:${CI_ENVIRONMENT_SLUG}\",
+        \"app:${SERVICENAME}\",
+        \"support_24x7:false\",
+        \"alert_group:ops\"
+      ]
+    }
+    "
+
+    # Create a Syntetic
+    echo $json_payload > syntetic.json  
+
+    # Getting Syntetic Monitor by Tag
+    entityId=$(curl -s -X GET "${API}/monitors?tag=app:${APPLICATION_SHORT_NAME}&tag=environment:${CI_ENVIRONMENT_SLUG}" -H "Authorization: Api-Token ${DT_API_TOKEN}" | jq .monitors[0].entityId)
+    # Remove Quotes from entityId
+    entityId=$(sed -e 's/^"//' -e 's/"$//' <<<"$entityId")
+
+    if [ "$entityId" == "null" ]; then
+        echo "No Syntetic found, create a new one."
+        curl -X POST "${API}/monitors" \
+          -H "Authorization: Api-Token ${DT_API_TOKEN}" \
+          -H 'Content-Type: application/json' \
+          -d @syntetic.json  
+    else
+        echo "Syntetic found with ID ${entityId} will update Monitor"
+        curl -X PUT "${API}/monitors/${entityId}" \
+          -H "Authorization: Api-Token ${DT_API_TOKEN}" \
+          -H 'Content-Type: application/json' \
+          -d @syntetic.json   
+    fi

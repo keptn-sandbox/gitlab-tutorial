@@ -1,0 +1,10 @@
+gitlab_configure_k8s:
+  stage: configure-gitlab
+  image: registry.gitlab.com/checkelmann/cicd-tools:latest
+  variables:
+      GIT_STRATEGY: none
+  script: |
+      curl -s https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/scripts/configure-gitlab.sh -o configure-gitlab.sh
+      chmod +x configure-gitlab.sh
+      ./configure-tenant.sh
+      

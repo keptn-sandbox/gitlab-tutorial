@@ -1,0 +1,56 @@
+.create_report:
+  image: registry.gitlab.com/checkelmann/cicd-tools:latest
+  variables:
+      GIT_STRATEGY: none
+  script: |
+    B4=$(cat before.perf)
+    AFTER=$(cat after.perf)
+
+    export REPORT="<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>Performance Report for ${APPLICATION_SHORT_NAME} - Job ${CI_JOB_ID}</title>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js'></script>\n
+    </head><body>\n
+    <p><canvas id=\"chart\"></canvas></p>\n
+    <script>\n
+    var txtB4 = \`${B4}\`;\n
+    var txtAfter= \`${AFTER}\`;\n
+    var objB4 = JSON.parse(txtB4);\n
+    var objAfter = JSON.parse(txtAfter);\n
+    var B4time = [];\n
+    var B4val = [];\n
+    var Afterval = [];\n
+    for(var k in objB4.dataResult.dataPoints) {\n
+      for(var x in objB4.dataResult.dataPoints[k]) {\n
+        B4val.push(objB4.dataResult.dataPoints[k][x][1]);\n
+    }};\n
+
+    for(var k in objAfter.dataResult.dataPoints) {\n
+      for(var x in objAfter.dataResult.dataPoints[k]) {\n
+        Afterval.push(objAfter.dataResult.dataPoints[k][x][1]);\n
+    }};\n
+
+    new Chart(document.getElementById(\"chart\"), {\n
+        type: 'bar',\n
+        data: {\n
+          labels: ['1','2','3','4','5','6','7','8','9','10'],\n
+          datasets: [\n
+            {\n
+              label: 'Before Deployment',\n
+              backgroundColor: '#3e95cd',\n
+              data: B4val\n
+            },\n
+            {\n
+              label: 'After Deployment',\n
+              backgroundColor: '#8e5ea2',\n
+              data: Afterval\n
+            }\n		
+          ]\n
+        },\n
+        options: {\n
+          title: {\n
+            display: true,\n
+            text: 'Performance Report for ${APPLICATION_SHORT_NAME} - Job ${CI_JOB_ID}'\n
+          }\n
+        }\n
+    });\n
+    </script></body></html>"
+    echo -e $REPORT > report.html

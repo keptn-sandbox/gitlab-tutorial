@@ -1,0 +1,20 @@
+.dt_get_problems:
+  image: registry.gitlab.com/checkelmann/cicd-tools:latest
+  variables:
+      GIT_STRATEGY: none
+  script: |
+    problems=$(curl -X GET "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/problem/feed?tag=app:${APPLICATION_SHORT_NAME}&tag=environment:${CI_ENVIRONMENT_SLUG}" -H "Authorization: Api-Token ${DT_API_TOKEN}" | jq .result.problems[0])
+    if [ "$problems" == "null" ]; then
+      echo "No problem was found with your deployment."
+    else
+      problemid=$(echo $problems|jq .id)
+      problemid=$(sed -e 's/^"//' -e 's/"$//' <<<"$problemid")
+      
+      echo "A problem was created after your deployment!"
+      echo "Problem ID:"
+      echo $problems|jq .id
+      echo $problems|jq .rankedImpacts[0]
+      echo "https://${DT_TENANT_ID}.live.dynatrace.com/#problems/problemdetails;pid=${problemid}"
+      exit 1
+    fi
+
