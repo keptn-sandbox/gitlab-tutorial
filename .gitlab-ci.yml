@@ -22,19 +22,24 @@ stages:
 
 #################################################################
 # Provisioning Stage
+# Create EKS Cluster using eksctl
 #################################################################
 create-aws-environment:
   stage: aws-eks-provisioning
   image: registry.gitlab.com/checkelmann/cicd-tools:latest
   variables:
       GIT_STRATEGY: none
-  script:
-      - eksctl create cluster --config-file assets/cluster.yml --kubeconfig aws.kubeconfig
-      - export KUBECONFIG=./aws.kubeconfig
-      - kubectl apply -f assets/helm-rbac.yml
-      - helm init --service-account tiller
-      - helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
-      - helm install incubator/aws-alb-ingress-controller --set autoDiscoverAwsRegion=true --set autoDiscoverAwsVpcID=true --set clusterName=dynatrace-demo
+  script: |
+      eksctl create cluster --config-file assets/cluster.yml --kubeconfig aws.kubeconfig
+      export KUBECONFIG=./aws.kubeconfig
+      kubectl apply -f assets/helm-rbac.yml
+      helm init --service-account tiller
+      helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
+      helm install incubator/aws-alb-ingress-controller --set autoDiscoverAwsRegion=true --set autoDiscoverAwsVpcID=true --set clusterName=dynatrace-demo
+      curl -s https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/scripts/configure-gitlab.sh -o configure-gitlab.sh
+      chmod +x configure-gitlab.sh
+      ./configure-tenant.sh
+
   when: manual
 
 #deploy_oneagent:
