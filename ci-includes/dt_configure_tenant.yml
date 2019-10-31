@@ -1,0 +1,13 @@
+dt_configure_tenant:
+  stage: configure-dynatrace
+  image: registry.gitlab.com/checkelmann/cicd-tools:latest
+  variables:
+      GIT_STRATEGY: none
+  script: |
+      curl -s https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/scripts/configure-tenant.sh -o configure-tenant.sh
+      curl -s https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/dt_rule_app.json -o dt_rule_app.json
+      curl -s https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/dt_rule_deployment_group.json -o dt_rule_deployment_group.json
+      curl -s https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/dt_rule_environment.json -o dt_rule_environment.json
+      chmod +x configure-tenant.sh
+      ./configure-tenant.sh
+
