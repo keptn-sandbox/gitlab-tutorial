@@ -1,0 +1,8 @@
+{
+    "name":"[NAME]",
+    "platform_kubernetes_attributes":{
+        "api_url":"[APIURL]",
+        "token":"[TOKEN]",        
+        "ca_cert":"[CERT]"
+    }
+}
