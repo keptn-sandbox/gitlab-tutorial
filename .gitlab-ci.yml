@@ -36,8 +36,10 @@ docker-build-master:
 deploy-application:
   image: registry.gitlab.com/checkelmann/cicd-tools:latest
   stage: deploy
+  environment:
+    name: test
   variables:
-      GIT_STRATEGY: fetch
+    GIT_STRATEGY: fetch
   script: |
     kubectl get pods --all-namespaces
   only:
