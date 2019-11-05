@@ -41,7 +41,7 @@ deploy-application:
   variables:
     GIT_STRATEGY: fetch
   script: |
-    kubectl get pods --all-namespaces
+    helm upgrade --install sample-app ./chart/
   only:
     - master
   when: manual
