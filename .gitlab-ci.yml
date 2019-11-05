@@ -35,6 +35,7 @@ docker-build-master:
 
 deploy-application:
   image: registry.gitlab.com/checkelmann/cicd-tools:latest
+  stage: deploy
   variables:
       GIT_STRATEGY: fetch
   script: |
