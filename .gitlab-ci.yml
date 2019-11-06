@@ -7,6 +7,7 @@
 #################################################################
 variables:
   APPLICATION_NAME: sample-app
+  APPLICATION_SHORT_NAME: sample-app
 
 include: 
   - local: 'ci-includes/dt_create_deployment_event.yaml'
@@ -44,4 +45,4 @@ deploy-application:
     helm upgrade --install -n ${CI_ENVIRONMENT_SLUG} sample-app ./chart/
   only:
     - master
-  when: manual
+  #when: manual
