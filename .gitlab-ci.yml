@@ -11,6 +11,7 @@ variables:
 
 include: 
   - local: 'ci-includes/dt_create_deployment_event.yaml'
+  - local: 'ci-includes/dt_create_synthetic_check.yaml'
 
 stages:
   - build
@@ -50,3 +51,9 @@ deploy-application:
 dt_create_deployment_event:
   environment:
     name: test
+  when: manual    
+
+dt_create_synthetic_check:
+  environment:
+    name: test
+  when: manual

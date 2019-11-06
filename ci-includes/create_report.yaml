@@ -1,4 +1,5 @@
-.create_report:
+create_report:
+  stage: verify
   image: registry.gitlab.com/checkelmann/cicd-tools:latest
   variables:
       GIT_STRATEGY: none
