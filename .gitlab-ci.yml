@@ -46,3 +46,7 @@ deploy-application:
   only:
     - master
   when: manual
+
+dt_create_deployment_event:
+  environment:
+    name: test
