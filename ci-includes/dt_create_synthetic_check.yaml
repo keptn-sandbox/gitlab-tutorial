@@ -14,9 +14,9 @@ dt_create_synthetic_check:
       TL=$(cat locations.txt| jq -r ".locations[${COUNTER}] | .entityId")
       let COUNTER=COUNTER+1
       if [ $COUNTER -lt $LOCATIONS ]; then
-        LOC=$LOC"\"${TL}\","
+        LOC=$LOC"${TL},"
       else
-        LOC=$LOC"\"${TL}\""
+        LOC=$LOC"${TL}"
       fi
     done
 
