@@ -3,6 +3,7 @@ dt_create_deployment_event:
   image: registry.gitlab.com/checkelmann/cicd-tools:latest
   variables:
       GIT_STRATEGY: none
+  when: manual
   script: |
     export DT_PAYLOAD="
     {
