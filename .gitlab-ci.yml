@@ -8,8 +8,8 @@
 variables:
   APPLICATION_NAME: sample-app
 
-#include: 
-#  - local: 'ci-includes/dt_deploy-eks-oneagent.yml'
+include: 
+  - local: 'ci-includes/dt_create_deployment_event.yaml'
 
 stages:
   - build
@@ -41,7 +41,7 @@ deploy-application:
   variables:
     GIT_STRATEGY: fetch
   script: |
-    helm upgrade --install sample-app ./chart/
+    helm upgrade --install -n ${CI_ENVIRONMENT_SLUG} sample-app ./chart/
   only:
     - master
   when: manual
