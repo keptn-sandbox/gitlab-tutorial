@@ -14,9 +14,9 @@ dt_create_synthetic_check:
       TL=$(cat locations.txt| jq -r ".locations[${COUNTER}] | .entityId")
       let COUNTER=COUNTER+1
       if [ $COUNTER -lt $LOCATIONS ]; then
-        LOC=$LOC"${TL},"
+        LOC=$LOC"\"${TL}\","
       else
-        LOC=$LOC"${TL}"
+        LOC=$LOC"\"${TL}\""
       fi
     done
 
@@ -87,10 +87,10 @@ dt_create_synthetic_check:
     cat syntetic.json  
     # Getting Syntetic Monitor by Tag
     entityId=$(curl -s -X GET "${API}/monitors?tag=app:${APPLICATION_SHORT_NAME}&tag=environment:${CI_ENVIRONMENT_SLUG}" -H "Authorization: Api-Token ${DT_API_TOKEN}" | jq .monitors[0].entityId)
-    echo entityId
+    echo $entityId
     # Remove Quotes from entityId
-    entityId=$(sed -e 's/^"//' -e 's/"$//' <<<"$entityId")
-
+    entityId=$(echo "$entityId" | sed -e 's/^"//' -e 's/"$//')
+    echo ent $entityId
     if [ "$entityId" == "null" ]; then
         echo "No Syntetic found, create a new one."
         curl -X POST "${API}/monitors" \
