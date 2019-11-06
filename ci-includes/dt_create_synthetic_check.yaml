@@ -84,9 +84,10 @@ dt_create_synthetic_check:
 
     # Create a Syntetic
     echo $json_payload > syntetic.json  
-
+    cat syntetic.json  
     # Getting Syntetic Monitor by Tag
     entityId=$(curl -s -X GET "${API}/monitors?tag=app:${APPLICATION_SHORT_NAME}&tag=environment:${CI_ENVIRONMENT_SLUG}" -H "Authorization: Api-Token ${DT_API_TOKEN}" | jq .monitors[0].entityId)
+    echo entityId
     # Remove Quotes from entityId
     entityId=$(sed -e 's/^"//' -e 's/"$//' <<<"$entityId")
 
