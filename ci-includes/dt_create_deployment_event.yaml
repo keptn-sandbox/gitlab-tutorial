@@ -5,6 +5,7 @@ dt_create_deployment_event:
       GIT_STRATEGY: none
   when: manual
   script: |
+    echo ${APPLICATION_SHORT_NAME}-${CI_ENVIRONMENT_NAME}
     export DT_PAYLOAD="
     {
       \"eventType\": \"CUSTOM_DEPLOYMENT\",
@@ -12,12 +13,12 @@ dt_create_deployment_event:
         \"tagRule\" : {
             \"meTypes\" : \"SERVICE\",
             \"tags\" : [ 
-          {
-            \"context\": \"CONTEXTLESS\",
-            \"key\": \"deployment_group\", 
-            \"value\": \"${APPLICATION_SHORT_NAME}-${CI_ENVIRONMENT_NAME}\"
-          }
-        ]
+              {
+                \"context\": \"CONTEXTLESS\",
+                \"key\": \"deployment_group\", 
+                \"value\": \"${APPLICATION_SHORT_NAME}-${CI_ENVIRONMENT_NAME}\"
+              }
+            ]
         }
       },
       \"deploymentName\":\"${CI_COMMIT_MESSAGE}\",

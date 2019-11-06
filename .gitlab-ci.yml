@@ -45,4 +45,4 @@ deploy-application:
     helm upgrade --install --namespace=${CI_ENVIRONMENT_SLUG} sample-app ./chart/
   only:
     - master
-  #when: manual
+  when: manual
