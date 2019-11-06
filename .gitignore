@@ -1,3 +1,5 @@
 aws.kubeconfig
 cert.pem
 temp/
+locations.txt
+loc.sh

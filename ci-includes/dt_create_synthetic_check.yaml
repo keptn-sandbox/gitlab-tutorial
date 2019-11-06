@@ -4,9 +4,28 @@ dt_create_synthetic_check:
   variables:
       GIT_STRATEGY: none
   script: |
+    # Getting Synthetic Check Locations
+    curl -s -H "Authorization: Api-Token ${DT_API_TOKEN}" -X GET "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/synthetic/locations?type=${TYPE}" | jq . > locations.txt
+
+    COUNTER=0
+    LOC=""
+    while [ $COUNTER -lt $LOCATIONS ]; do
+      echo $COUNTER
+      TL=$(cat locations.txt| jq -r ".locations[${COUNTER}] | .entityId")
+      let COUNTER=COUNTER+1
+      if [ $COUNTER -lt $LOCATIONS ]; then
+        LOC=$LOC"\"${TL}\","
+      else
+        LOC=$LOC"\"${TL}\""
+      fi
+    done
+
+    echo $LOC
+
+
     export HEALTHENDPOINT=$(helm get ${APPLICATION_SHORT_NAME}|grep readinessProbe -A2|tail -n 1|awk '{print $2}')
     # export INGRESSHOST=$(helm get ${APPLICATION_SHORT_NAME}|grep "host:"| head -1|awk '{print $3}')
-    export INGRESSHOST=$(kubectl get ingress/sample-app|tail -1|awk {'print $3'})
+    export INGRESSHOST=$(kubectl -n ${CI_ENVIRONMENT_NAME} get ingress/sample-app|tail -1|awk {'print $3'})
     API="https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/synthetic"
     ENDPOINT="http://${INGRESSHOST}/${HEALTHENDPOINT}"
     json_payload="
@@ -34,8 +53,7 @@ dt_create_synthetic_check:
       \"type\": \"HTTP\",
       \"name\": \"${CI_ENVIRONMENT_SLUG} - ${APPLICATION_SHORT_NAME} - Ping\",
       \"locations\": [
-        \"SYNTHETIC_LOCATION-XYZ\",
-        \"SYNTHETIC_LOCATION-XYZ\"
+        ${LOC}
       ],
       \"enabled\": true,
       \"script\": {
