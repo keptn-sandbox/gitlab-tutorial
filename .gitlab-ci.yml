@@ -55,8 +55,8 @@ dt_create_deployment_event:
 
 dt_create_synthetic_check:
   variables:
-    TYPE: PUBLIC
-    LOCATIONS: 2
+    TYPE: PRIVATE
+    LOCATIONS: 1
   environment:
     name: test
   when: manual
