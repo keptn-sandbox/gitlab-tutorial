@@ -1,4 +1,5 @@
-.dt_get_problems:
+dt_get_problems:
+  stage: verify
   image: registry.gitlab.com/checkelmann/cicd-tools:latest
   variables:
       GIT_STRATEGY: none
@@ -17,4 +18,6 @@
       echo "https://${DT_TENANT_ID}.live.dynatrace.com/#problems/problemdetails;pid=${problemid}"
       exit 1
     fi
+  when: delayed
+  start_in: 10 minutes  
 

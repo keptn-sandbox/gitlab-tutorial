@@ -20,14 +20,11 @@ dt_create_synthetic_check:
       fi
     done
 
-    echo $LOC
-
-
     export HEALTHENDPOINT=$(helm get ${APPLICATION_SHORT_NAME}|grep readinessProbe -A2|tail -n 1|awk '{print $2}')
     # export INGRESSHOST=$(helm get ${APPLICATION_SHORT_NAME}|grep "host:"| head -1|awk '{print $3}')
     export INGRESSHOST=$(kubectl -n ${CI_ENVIRONMENT_NAME} get ingress/sample-app|tail -1|awk {'print $3'})
     API="https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/synthetic"
-    ENDPOINT="http://${INGRESSHOST}/${HEALTHENDPOINT}"
+    ENDPOINT="http://${INGRESSHOST}${HEALTHENDPOINT}"
     json_payload="
       {
       \"frequencyMin\": 15,
@@ -84,13 +81,11 @@ dt_create_synthetic_check:
 
     # Create a Syntetic
     echo $json_payload > syntetic.json  
-    cat syntetic.json  
     # Getting Syntetic Monitor by Tag
     entityId=$(curl -s -X GET "${API}/monitors?tag=app:${APPLICATION_SHORT_NAME}&tag=environment:${CI_ENVIRONMENT_SLUG}" -H "Authorization: Api-Token ${DT_API_TOKEN}" | jq .monitors[0].entityId)
-    echo $entityId
     # Remove Quotes from entityId
     entityId=$(echo "$entityId" | sed -e 's/^"//' -e 's/"$//')
-    echo ent $entityId
+
     if [ "$entityId" == "null" ]; then
         echo "No Syntetic found, create a new one."
         curl -X POST "${API}/monitors" \

@@ -12,10 +12,12 @@ variables:
 include: 
   - local: 'ci-includes/dt_create_deployment_event.yaml'
   - local: 'ci-includes/dt_create_synthetic_check.yaml'
+  - local: 'ci-includes/dt_get_problems.yaml'
 
 stages:
   - build
   - deploy
+  - verify
 
 #################################################################
 # Build Stage
