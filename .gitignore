@@ -4,3 +4,7 @@ cert.pem
 temp/
 locations.txt
 loc.sh
+performance.sh
+compare.py
+before.json
+after.json
