@@ -20,7 +20,7 @@ dt_performance:
           "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/timeseries/com.dynatrace.builtin:service.responsetime?includeData=true&startTimestamp=${timeFrom}&endTimestamp=${timeTo}&aggregationType=AVG&entity=${entityId}" \
           -H "Authorization: Api-Token ${DT_API_TOKEN}" | jq .dataResult.dataPoints.\"$entityId\" > before.json
 
-    pct=$(python compare.py)
+    pct=$(python /compare.py)
     if [ $pct -ge 10 ]; then
         echo "Performance too slow with ${pct}%!"
         exit 1
