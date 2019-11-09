@@ -35,8 +35,7 @@ docker-build-master:
     - docker build --pull -t "$CI_REGISTRY_IMAGE" .
     - docker push "$CI_REGISTRY_IMAGE"
   only:
-    - master
-  when: manual
+    - tags
 
 deploy-application:
   image: registry.gitlab.com/checkelmann/cicd-tools:latest
@@ -48,13 +47,13 @@ deploy-application:
   script: |
     helm upgrade --install --namespace=${CI_ENVIRONMENT_SLUG} sample-app ./chart/
   only:
-    - master
-  when: manual
+    - tags  
 
 dt_create_deployment_event:
   environment:
     name: test
-  when: manual    
+  only:
+    - tags
 
 dt_create_synthetic_check:
   variables:
@@ -62,4 +61,15 @@ dt_create_synthetic_check:
     LOCATIONS: 1
   environment:
     name: test
-  when: manual
+  only:
+    - tags  
+
+
+dt_get_problems:
+  only:
+    - tags
+
+dt_performance:
+  only:
+    - tags
+  needs: ["dt_create_deployment_event"]
