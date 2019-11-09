@@ -22,7 +22,7 @@ dt_create_synthetic_check:
 
     export HEALTHENDPOINT=$(helm get ${APPLICATION_SHORT_NAME}|grep readinessProbe -A2|tail -n 1|awk '{print $2}')
     # export INGRESSHOST=$(helm get ${APPLICATION_SHORT_NAME}|grep "host:"| head -1|awk '{print $3}')
-    export INGRESSHOST=$(kubectl -n ${CI_ENVIRONMENT_NAME} get ingress/sample-app|tail -1|awk {'print $3'})
+    export INGRESSHOST=$(kubectl -n ${CI_ENVIRONMENT_NAME} get ingress/${APPLICATION_SHORT_NAME}|tail -1|awk {'print $3'})
     API="https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/synthetic"
     ENDPOINT="http://${INGRESSHOST}${HEALTHENDPOINT}"
     json_payload="
@@ -72,7 +72,7 @@ dt_create_synthetic_check:
       },
       \"tags\": [
         \"environment:${CI_ENVIRONMENT_SLUG}\",
-        \"app:${SERVICENAME}\",
+        \"app:${APPLICATION_SHORT_NAME}\",
         \"support_24x7:false\",
         \"alert_group:ops\"
       ]

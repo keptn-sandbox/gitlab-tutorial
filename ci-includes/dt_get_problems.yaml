@@ -9,7 +9,7 @@ dt_get_problems:
       echo "No problem was found with your deployment."
     else
       problemid=$(echo $problems|jq .id)
-      problemid=$(sed -e 's/^"//' -e 's/"$//' <<<"$problemid")
+      problemid=$(echo "$problemid" | sed -e 's/^"//' -e 's/"$//')     
       
       echo "A problem was created after your deployment!"
       echo "Problem ID:"
