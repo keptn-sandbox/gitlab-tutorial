@@ -8,3 +8,5 @@ performance.sh
 compare.py
 before.json
 after.json
+problems.json
+error.sh

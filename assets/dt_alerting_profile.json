@@ -1,0 +1,36 @@
+{
+    "displayName": "${APPLICATION_SHORT_NAME}",
+    "rules": [
+      {
+        "severityLevel": "AVAILABILITY",
+        "tagFilter": {
+          "includeMode": "INCLUDE_ANY",
+          "tagFilters": [
+            {
+              "context": "CONTEXTLESS",
+              "key": "app:${APPLICATION_SHORT_NAME}",
+              "value": null
+            }
+          ]
+        },
+        "delayInMinutes": 0
+      },
+      {
+        "severityLevel": "ERROR",
+        "tagFilter": {
+          "includeMode": "INCLUDE_ANY",
+          "tagFilters": [
+            {
+              "context": "CONTEXTLESS",
+              "key": "app:${APPLICATION_SHORT_NAME}",
+              "value": null
+            }
+          ]
+        },
+        "delayInMinutes": 0
+      }
+    ],
+    "managementZoneId": null,
+    "eventTypeFilters": []
+  }
+  
