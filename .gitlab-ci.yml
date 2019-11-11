@@ -19,6 +19,7 @@ stages:
   - build
   - deploy
   - verify
+  - chatops
 
 #################################################################
 # Build Stage
@@ -73,3 +74,9 @@ dt_performance:
   only:
     - tags
   needs: ["dt_create_deployment_event"]
+
+deploy-to-prod:
+  stage: chatops
+  only: [chat, tags]
+  script:
+    - echo "ChatOps Stage - Deploy to Prod"
