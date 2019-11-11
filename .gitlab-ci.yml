@@ -20,6 +20,7 @@ stages:
   - deploy
   - verify
   - chatops
+  - rollout
 
 #################################################################
 # Build Stage
@@ -78,5 +79,13 @@ dt_performance:
 deploy-to-prod:
   stage: chatops
   only: [chat, tags]
+  when: manual
+  script:
+    - echo "ChatOps Stage - Deploy to Prod"
+
+rollout-to-prod:
+  stage: rollout
+  only: [tags]
+  needs: ["deploy-to-prod"]
   script:
     - echo "ChatOps Stage - Deploy to Prod"
