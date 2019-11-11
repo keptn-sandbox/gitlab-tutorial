@@ -21,10 +21,12 @@ dt_performance:
           -H "Authorization: Api-Token ${DT_API_TOKEN}" | jq .dataResult.dataPoints.\"$entityId\" > before.json
 
     pct=$(python /compare.py)
-    if [ $pct -ge 10 ]; then
+    python /sendslack.py "Performance Report for ${APPLICATION_SHORT_NAME}" --attachment $(pwd)/report.png
+
+    if [ $pct -ge ${THRESHOLD} ]; then
         echo "Performance too slow with ${pct}%!"
         exit 1
     else
         echo "Performance OK with ${pct}%!"
     fi
-    python /sendslack.py "Performance Report for ${APPLICATION_SHORT_NAME}" --attachment $(pwd)/report.png
+    

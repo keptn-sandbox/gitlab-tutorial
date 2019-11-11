@@ -88,4 +88,4 @@ rollout-to-prod:
   only: [tags]
   needs: ["deploy-to-prod"]
   script:
-    - echo "ChatOps Stage - Deploy to Prod"
+    - echo "Rolling out to Production"
