@@ -4,7 +4,7 @@ dt_get_problems:
   variables:
       GIT_STRATEGY: none
   script: |
-    problems=$(curl -X GET "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/problem/feed?tag=app:${APPLICATION_SHORT_NAME}&tag=environment:${CI_ENVIRONMENT_SLUG}" -H "Authorization: Api-Token ${DT_API_TOKEN}" | jq .result.problems)
+    problems=$(curl -X GET "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/problem/feed?tag=app:${APPLICATION_SHORT_NAME}&tag=environment:${CI_ENVIRONMENT_SLUG}" -H "Authorization: Api-Token ${DT_API_TOKEN}" | jq ".result.problems[0]")
     if [ "$problems" == "null" ]; then
       echo "No problem was found with your deployment."
     else
