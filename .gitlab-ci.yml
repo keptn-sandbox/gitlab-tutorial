@@ -45,6 +45,7 @@ install-keptn:
   variables:
       GIT_STRATEGY: none
   script: |
+    curl -o cluster.yaml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/cluster.yml    
     cluster_name=$(yq r cluster.yaml metadata.name)
     cluster_region=$(yq r cluster.yaml metadata.region)
     eksctl utils update-coredns --name=${cluster_name} --region=${cluster_region} --approve
