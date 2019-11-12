@@ -29,13 +29,27 @@ create-aws-environment:
   variables:
       GIT_STRATEGY: none
   script:
-      - eksctl create cluster --config-file assets/cluster.yml --kubeconfig aws.kubeconfig
+      - curl -o cluster.yaml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/cluster.yml
+      - curl -o helm-rbac.yml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/helm-rbac.yml
+      - eksctl create cluster --config-file cluster.yml --kubeconfig aws.kubeconfig
       - export KUBECONFIG=./aws.kubeconfig
-      - kubectl apply -f assets/helm-rbac.yml
+      - kubectl apply -f helm-rbac.yml
       - helm init --service-account tiller
       - helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
       - helm install incubator/aws-alb-ingress-controller --set autoDiscoverAwsRegion=true --set autoDiscoverAwsVpcID=true --set clusterName=dynatrace-demo
   when: manual
+
+install-keptn:
+  stage: aws-eks-keptn
+  image: registry.gitlab.com/checkelmann/cicd-tools:latest
+  variables:
+      GIT_STRATEGY: none
+  script: |
+    cluster_name=$(yq r cluster.yaml metadata.name)
+    cluster_region=$(yq r cluster.yaml metadata.region)
+    eksctl utils update-coredns --name=${cluster_name} --region=${cluster_region} --approve
+    keptn install --platform=eks
+  when: manual  
 
 #deploy_oneagent:
 #  stage: configure-dynatrace

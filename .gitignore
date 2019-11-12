@@ -1,3 +1,4 @@
 aws.kubeconfig
-cert.pem
+*.pem
 temp/
+scripts/
