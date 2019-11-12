@@ -8,17 +8,17 @@
 #################################################################
 # Include necessary Templates 
 #################################################################
-include:  
-  - project: 'checkelmann/dynatrace-pipeline'
-    ref: master
-    file: '/ci-includes/dt_deploy-eks-oneagent.yml'
-  - project: 'checkelmann/dynatrace-pipeline'
-    ref: master
-    file: '/ci-includes/dt_configure_tenant.yml'
+#include:  
+#  - project: 'checkelmann/dynatrace-pipeline'
+#    ref: master
+#    file: '/ci-includes/dt_deploy-eks-oneagent.yml'
+#  - project: 'checkelmann/dynatrace-pipeline'
+#    ref: master
+#    file: '/ci-includes/dt_configure_tenant.yml'
 
 stages:
   - aws-eks-provisioning
-  - configure-dynatrace
+  - aws-eks-keptn
 
 #################################################################
 # Provisioning Stage
