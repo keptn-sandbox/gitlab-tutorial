@@ -42,6 +42,8 @@ create-aws-environment:
 install-keptn:
   stage: aws-eks-keptn
   image: registry.gitlab.com/checkelmann/cicd-tools:latest
+  environment:
+    name: test
   variables:
       GIT_STRATEGY: none
   script: |
