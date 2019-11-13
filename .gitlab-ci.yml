@@ -29,16 +29,22 @@ create-aws-environment:
   image: registry.gitlab.com/checkelmann/cicd-tools:latest
   variables:
       GIT_STRATEGY: none
-  script:
-      - curl -o cluster.yml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/cluster.yml
-      - curl -o helm-rbac.yml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/helm-rbac.yml
-      - eksctl create cluster --config-file cluster.yml --kubeconfig aws.kubeconfig
-      - export KUBECONFIG=./aws.kubeconfig
-      - kubectl apply -f helm-rbac.yml
-      - helm init --service-account tiller
-      - helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
-      - helm install incubator/aws-alb-ingress-controller --set autoDiscoverAwsRegion=true --set autoDiscoverAwsVpcID=true --set clusterName=dynatrace-demo
-      - python /sendslack.py "Kubeconfig for Cluster" --attachment $(pwd)/aws.kubeconfig
+  script: |
+      curl -o cluster.yml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/cluster.yml
+      curl -o helm-rbac.yml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/helm-rbac.yml
+      curl -o eks-service-account.yml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/eks-service-account.yml
+      eksctl create cluster --config-file cluster.yml --kubeconfig aws.kubeconfig
+      export KUBECONFIG=./aws.kubeconfig
+      kubectl apply -f helm-rbac.yml
+      kubectl apply -f eks-service-account.yml
+      helm init --service-account tiller
+      helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
+      helm install incubator/aws-alb-ingress-controller --set autoDiscoverAwsRegion=true --set autoDiscoverAwsVpcID=true --set clusterName=dynatrace-demo
+      kubectl get secret $(kubectl get secrets|grep default|awk '{print $1}') -o jsonpath="{['data']['ca\.crt']}" | base64 --decode > cert.pem
+      K8STOKEN=$(kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep eks-admin | awk '{print $1}')|grep "token:"|awk '{print $2}')
+      K8SAPI=$(cat aws.kubeconfig|grep "server:"|awk '{print $2}')
+      python /sendslack.py "API Url ${K8SAPI} with Tokem ${K8STOKEN}" --attachment $(pwd)/cert.pem
+      python /sendslack.py "Kubeconfig for Cluster" --attachment $(pwd)/aws.kubeconfig
   when: manual
 
 install-keptn:
