@@ -38,6 +38,24 @@ create-aws-environment:
       kubectl apply -f helm-rbac.yml
       kubectl apply -f eks-service-account.yml
       helm init --service-account tiller
+      
+      echo "Wait for tiller to be ready..."
+      for i in {1..25}
+      do
+        helmready=$(kubectl get po -n kube-system|grep tiller|awk '{print $3}')
+        if [ "$helmready" = "Running" ];
+        then
+          echo "Tiller is ready"
+          break
+        fi
+        sleep 2
+      done
+      if [ "$helmready" != "Running" ];
+      then
+        echo "Helm installation failed!"
+        exit 1
+      fi
+
       helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
       helm install incubator/aws-alb-ingress-controller --set autoDiscoverAwsRegion=true --set autoDiscoverAwsVpcID=true --set clusterName=dynatrace-demo
       kubectl get secret $(kubectl get secrets|grep default|awk '{print $1}') -o jsonpath="{['data']['ca\.crt']}" | base64 --decode > cert.pem
