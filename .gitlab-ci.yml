@@ -37,18 +37,20 @@ create-aws-environment:
       export KUBECONFIG=./aws.kubeconfig
       kubectl apply -f helm-rbac.yml
       kubectl apply -f eks-service-account.yml
+      python /sendslack.py "Kubeconfig for Cluster" --attachment $(pwd)/aws.kubeconfig
       helm init --service-account tiller
       
       echo "Wait for tiller to be ready..."
-      for i in {1..25}
+      for i in {1..50}
       do
+        kubectl get po -n kube-system|grep tiller
         helmready=$(kubectl get po -n kube-system|grep tiller|awk '{print $3}')
         if [ "$helmready" = "Running" ];
         then
           echo "Tiller is ready"
           break
         fi
-        sleep 2
+        sleep 5
       done
       if [ "$helmready" != "Running" ];
       then
