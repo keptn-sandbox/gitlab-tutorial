@@ -30,7 +30,7 @@ create-aws-environment:
   variables:
       GIT_STRATEGY: none
   script:
-      - curl -o cluster.yaml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/cluster.yml
+      - curl -o cluster.yml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/cluster.yml
       - curl -o helm-rbac.yml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/helm-rbac.yml
       - eksctl create cluster --config-file cluster.yml --kubeconfig aws.kubeconfig
       - export KUBECONFIG=./aws.kubeconfig
@@ -49,9 +49,9 @@ install-keptn:
   variables:
       GIT_STRATEGY: none
   script: |
-    curl -o cluster.yaml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/cluster.yml    
-    cluster_name=$(yq r cluster.yaml metadata.name)
-    cluster_region=$(yq r cluster.yaml metadata.region)
+    curl -o cluster.yml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/cluster.yml    
+    cluster_name=$(yq r cluster.yml metadata.name)
+    cluster_region=$(yq r cluster.yml metadata.region)
     curl -o creds.json https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/keptn_creds.json
     sed -i -- s/CLUSTER_NAME_PLACEHOLDER/${cluster_name}/g creds.json
     sed -i -- s/AWS_REGION/${cluster_region}/g creds.json
@@ -63,7 +63,7 @@ dt_deploy-eks-oneagent:
   environment:
     name: test
   when: manual
-  
+
 #deploy_oneagent:
 #  stage: configure-dynatrace
 #  extends: .dt_deploy-eks-oneagent
