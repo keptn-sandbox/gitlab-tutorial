@@ -8,12 +8,12 @@ metadata:
 nodeGroups:
   - name: ng-1
     instanceType: mixed
-    desiredCapacity: 2
+    desiredCapacity: 4
     labels: { role: workers }
     instancesDistribution:
       maxPrice: 0.05
       onDemandBaseCapacity: 0
-      instanceTypes: ["t3a.large", "t3a.medium"]
+      instanceTypes: ["t3a.large", "t3a.xlarge"]
     iam:
       withAddonPolicies:
         albIngress: true
