@@ -8,16 +8,17 @@
 #################################################################
 # Include necessary Templates 
 #################################################################
-#include:  
-#  - project: 'checkelmann/dynatrace-pipeline'
-#    ref: master
-#    file: '/ci-includes/dt_deploy-eks-oneagent.yml'
+include:  
+  - project: 'checkelmann/dynatrace-pipeline'
+    ref: master
+    file: '/ci-includes/dt_deploy-eks-oneagent.yml'
 #  - project: 'checkelmann/dynatrace-pipeline'
 #    ref: master
 #    file: '/ci-includes/dt_configure_tenant.yml'
 
 stages:
   - aws-eks-provisioning
+  - aws-eks-oneagent
   - aws-eks-keptn
 
 #################################################################
@@ -37,6 +38,7 @@ create-aws-environment:
       - helm init --service-account tiller
       - helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
       - helm install incubator/aws-alb-ingress-controller --set autoDiscoverAwsRegion=true --set autoDiscoverAwsVpcID=true --set clusterName=dynatrace-demo
+      - python /sendslack.py "Kubeconfig for Cluster" --attachment $(pwd)/aws.kubeconfig
   when: manual
 
 install-keptn:
@@ -57,6 +59,11 @@ install-keptn:
     keptn install --platform=eks -c=creds.json --keptn-version=0.5.2
   when: manual  
 
+dt_deploy-eks-oneagent:
+  environment:
+    name: test
+  when: manual
+  
 #deploy_oneagent:
 #  stage: configure-dynatrace
 #  extends: .dt_deploy-eks-oneagent
