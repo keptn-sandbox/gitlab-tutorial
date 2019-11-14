@@ -93,19 +93,24 @@ install-keptn:
     curl -o creds.json https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/keptn_creds.json
     sed -i -- s/CLUSTER_NAME_PLACEHOLDER/${cluster_name}/g creds.json
     sed -i -- s/AWS_REGION/${cluster_region}/g creds.json
-    # eksctl utils update-coredns --name=${cluster_name} --region=${cluster_region} --approve
-    # keptn install --platform=eks -c=creds.json --keptn-version=0.5.2
-    kubectl get nodes    
+    eksctl utils update-coredns --name=${cluster_name} --region=${cluster_region} --approve
+    keptn install --platform=eks -c=creds.json --keptn-version=0.5.2|tee inst.out
+    export ZONE_ID=$(aws route53 list-hosted-zones-by-name --dns-name=${AWS_ROUTE53_DOMAIN}|jq ".HostedZones[0].Id"|grep -o -P '(?<=hostedzone/).*(?=")')
+    export KEPTN_ENDPOINT=$(cat inst.out|grep "set for"|awk {'print $13'})
+    aws route53 change-resource-record-sets --hosted-zone-id "${ZONE_ID}" --change-batch "{\"Changes\":[{\"Action\":\"CREATE\",\"ResourceRecordSet\":{\"Name\":\"*.${AWS_ROUTE53_DOMAIN}.\",\"Type\":\"CNAME\",\"TTL\":60,\"ResourceRecords\":[{\"Value\":\"${KEPTN_ENDPOINT}\"}]}}]}" --region us-east-1
+    echo "Wait 60sec for DNS Record beeing updated"
+    sleep 60
+    keptn configure domain ${AWS_ROUTE53_DOMAIN}
+    echo "Configure GitLab CI/CD Variable"
+    export KEPTN_API=$(head -1 ~/.keptn/.keptn)
+    export KEPTN_TOKEN=$(tail -1 ~/.keptn/.keptn)
+    #POST /projects/:id/variables
+    GL_API="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/variables"
+    curl --request POST --header "PRIVATE-TOKEN: ${GL_API_TOKEN}" $GL_API --form "key=KEPTN_API" --form "value=${KEPTN_API}"
+    curl --request POST --header "PRIVATE-TOKEN: ${GL_API_TOKEN}" $GL_API --form "key=KEPTN_TOKEN" --form "value=${KEPTN_TOKEN}"
   when: manual  
 
 dt_deploy-eks-oneagent:
   environment:
     name: test
   when: manual
-
-#deploy_oneagent:
-#  stage: configure-dynatrace
-#  extends: .dt_deploy-eks-oneagent
-#  environment:
-#    name: test
-#  when: manual
