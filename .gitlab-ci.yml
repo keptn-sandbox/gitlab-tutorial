@@ -93,8 +93,9 @@ install-keptn:
     curl -o creds.json https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/keptn_creds.json
     sed -i -- s/CLUSTER_NAME_PLACEHOLDER/${cluster_name}/g creds.json
     sed -i -- s/AWS_REGION/${cluster_region}/g creds.json
-    eksctl utils update-coredns --name=${cluster_name} --region=${cluster_region} --approve
-    keptn install --platform=eks -c=creds.json --keptn-version=0.5.2
+    # eksctl utils update-coredns --name=${cluster_name} --region=${cluster_region} --approve
+    # keptn install --platform=eks -c=creds.json --keptn-version=0.5.2
+    kubectl get nodes    
   when: manual  
 
 dt_deploy-eks-oneagent:
