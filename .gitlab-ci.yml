@@ -43,8 +43,6 @@ create-aws-environment:
     export K8STOKEN=$(kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep eks-admin | awk '{print $1}')|grep "token:"|awk '{print $2}')
     export K8SAPI=$(cat aws.kubeconfig|grep "server:"|awk '{print $2}')
     export K8S_NAME=$(yq r cluster.yml metadata.name)
-    cat $(pwd)/cert.pem
-
     python /sendslack.py "API Url @${K8SAPI} with Token ${K8STOKEN}" 
     echo "Sending cert...."
     python /sendslack.py "Certificate" --attachment $(pwd)/cert.pem
@@ -57,7 +55,6 @@ create-aws-environment:
 
     for i in $(seq 1 20);
     do
-      #kubectl get po -n kube-system|grep tiller
       helmready=$(kubectl get po -n kube-system|grep tiller|awk '{print $3}')
       echo $helmready
       if [ "$helmready" = "Running" ];
