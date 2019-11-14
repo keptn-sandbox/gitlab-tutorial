@@ -2,3 +2,6 @@ aws.kubeconfig
 *.pem
 temp/
 scripts/
+*.sh
+*.yml
+*.py

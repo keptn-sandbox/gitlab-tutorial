@@ -30,42 +30,56 @@ create-aws-environment:
   variables:
       GIT_STRATEGY: none
   script: |
-      curl -o cluster.yml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/cluster.yml
-      curl -o helm-rbac.yml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/helm-rbac.yml
-      curl -o eks-service-account.yml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/eks-service-account.yml
-      eksctl create cluster --config-file cluster.yml --kubeconfig aws.kubeconfig
-      export KUBECONFIG=./aws.kubeconfig
-      kubectl apply -f helm-rbac.yml
-      kubectl apply -f eks-service-account.yml
-      python /sendslack.py "Kubeconfig for Cluster" --attachment $(pwd)/aws.kubeconfig
-      kubectl get secret $(kubectl get secrets|grep default|awk '{print $1}') -o jsonpath="{['data']['ca\.crt']}" | base64 --decode > cert.pem
-      K8STOKEN=$(kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep eks-admin | awk '{print $1}')|grep "token:"|awk '{print $2}')
-      K8SAPI=$(cat aws.kubeconfig|grep "server:"|awk '{print $2}')
-      python /sendslack.py "API Url ${K8SAPI} with Tokem ${K8STOKEN}" --attachment $(pwd)/cert.pem
-      python /sendslack.py "Kubeconfig for Cluster" --attachment $(pwd)/aws.kubeconfig
+    curl -o cluster.yml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/cluster.yml
+    curl -o helm-rbac.yml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/helm-rbac.yml
+    curl -o eks-service-account.yml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/eks-service-account.yml
+    eksctl create cluster --config-file cluster.yml --kubeconfig aws.kubeconfig
+    export KUBECONFIG=./aws.kubeconfig
+    kubectl apply -f helm-rbac.yml
+    kubectl apply -f eks-service-account.yml
+    python /sendslack.py "Kubeconfig for Cluster" --attachment $(pwd)/aws.kubeconfig
+    echo "Getting Secrets..."
+    kubectl get secret $(kubectl get secrets|grep default|awk '{print $1}') -o jsonpath="{.data.ca\.crt}"|base64 -d > cert.pem
+    export K8STOKEN=$(kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep eks-admin | awk '{print $1}')|grep "token:"|awk '{print $2}')
+    export K8SAPI=$(cat aws.kubeconfig|grep "server:"|awk '{print $2}')
+    export K8S_NAME=$(yq r cluster.yml metadata.name)
+    cat $(pwd)/cert.pem
 
-      helm init --service-account tiller
-      
-      echo "Wait for tiller to be ready..."
-      for i in {1..50}
-      do
-        kubectl get po -n kube-system|grep tiller
-        helmready=$(kubectl get po -n kube-system|grep tiller|awk '{print $3}')
-        if [ "$helmready" = "Running" ];
-        then
-          echo "Tiller is ready"
-          break
-        fi
-        sleep 5
-      done
-      if [ "$helmready" != "Running" ];
+    python /sendslack.py "API Url @${K8SAPI} with Token ${K8STOKEN}" 
+    echo "Sending cert...."
+    python /sendslack.py "Certificate" --attachment $(pwd)/cert.pem
+    echo "Sending Config...."
+    python /sendslack.py "Kubeconfig for Cluster" --attachment $(pwd)/aws.kubeconfig
+
+    helm init --service-account tiller
+
+    echo "Wait for tiller to be ready..."
+
+    for i in $(seq 1 20);
+    do
+      #kubectl get po -n kube-system|grep tiller
+      helmready=$(kubectl get po -n kube-system|grep tiller|awk '{print $3}')
+      echo $helmready
+      if [ "$helmready" = "Running" ];
       then
-        echo "Helm installation failed!"
-        exit 1
+        echo "Tiller is ready"
+        break
       fi
+      echo $i
+      sleep 5
+    done
 
-      helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
-      helm install incubator/aws-alb-ingress-controller --set autoDiscoverAwsRegion=true --set autoDiscoverAwsVpcID=true --set clusterName=dynatrace-demo
+    if [ "$helmready" != "Running" ];
+    then
+      echo "Helm installation failed!"
+      exit 1
+    fi
+    kubectl logs $(kubectl get po -n kube-system|grep tiller|awk '{print $1}') -n kube-system
+    sleep 10
+
+    helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
+    helm install incubator/aws-alb-ingress-controller --set autoDiscoverAwsRegion=true --set autoDiscoverAwsVpcID=true --set clusterName=dynatrace-demo
+    python /gitlab.py
   when: manual
 
 install-keptn:
