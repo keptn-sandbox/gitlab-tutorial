@@ -12,14 +12,15 @@ include:
   - project: 'checkelmann/dynatrace-pipeline'
     ref: master
     file: '/ci-includes/dt_deploy-eks-oneagent.yml'
-#  - project: 'checkelmann/dynatrace-pipeline'
-#    ref: master
-#    file: '/ci-includes/dt_configure_tenant.yml'
+  - project: 'checkelmann/dynatrace-pipeline'
+    ref: master
+    file: '/ci-includes/dt_configure_tenant.yml'
 
 stages:
   - aws-eks-provisioning
   - aws-eks-oneagent
   - aws-eks-keptn
+  - configure-dynatrace
 
 #################################################################
 # Provisioning Stage
@@ -33,6 +34,7 @@ create-aws-environment:
     curl -o cluster.yml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/cluster.yml
     curl -o helm-rbac.yml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/helm-rbac.yml
     curl -o eks-service-account.yml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/eks-service-account.yml
+    curl -o dt_k8s_config.json https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/dt_k8s_config.json
     eksctl create cluster --config-file cluster.yml --kubeconfig aws.kubeconfig
     export KUBECONFIG=./aws.kubeconfig
     kubectl apply -f helm-rbac.yml
@@ -49,8 +51,13 @@ create-aws-environment:
     echo "Sending Config...."
     python /sendslack.py "Kubeconfig for Cluster" --attachment $(pwd)/aws.kubeconfig
 
-    helm init --service-account tiller
+    echo "Adding Cluster to Dynatrace"
+    API="https://${DT_TENANT_ID}.live.dynatrace.com/api/config/v1/kubernetes/credentials"
+    envsubst < dt_k8s_config.json > tmp.json
+    curl -s -H "Authorization: Api-Token ${DT_API_TOKEN}" -H 'Content-Type: application/json' -X POST ${API} -d @tmp.json
 
+    echo "Installing Helm"
+    helm init --service-account tiller
     echo "Wait for tiller to be ready..."
 
     for i in $(seq 1 20);
@@ -105,9 +112,20 @@ install-keptn:
     export KEPTN_API=$(head -1 ~/.keptn/.keptn)
     export KEPTN_TOKEN=$(tail -1 ~/.keptn/.keptn)
     #POST /projects/:id/variables
-    GL_API="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/variables"
-    curl --request POST --header "PRIVATE-TOKEN: ${GL_API_TOKEN}" $GL_API --form "key=KEPTN_API" --form "value=${KEPTN_API}"
-    curl --request POST --header "PRIVATE-TOKEN: ${GL_API_TOKEN}" $GL_API --form "key=KEPTN_TOKEN" --form "value=${KEPTN_TOKEN}"
+    GL_API="${CI_API_V4_URL}projects/${CI_PROJECT_ID}/variables"
+
+    TOKEN_EXISTS=$(curl -s --header "PRIVATE-TOKEN: ${GL_API_TOKEN}" $GL_API | jq '.[] | select (.key=="KEPTN_TOKEN")')
+    if [ "$TOKEN_EXISTS" = "" ]; then
+      noout=$(curl -s --request POST -H "PRIVATE-TOKEN: ${GL_API_TOKEN}" $GL_API --form "key=KEPTN_TOKEN" --form "value=${KEPTN_TOKEN}")
+    else
+      noout=$(curl -s --request PUT -H "PRIVATE-TOKEN: ${GL_API_TOKEN}" $GL_API/KEPTN_TOKEN --form "value=${KEPTN_TOKEN}")
+    fi
+    KEPTN_API_EXISTS=$(curl -s --header "PRIVATE-TOKEN: ${GL_API_TOKEN}" $GL_API | jq '.[] | select (.key=="KEPTN_API")')
+    if [ "$TOKEN_EXISTS" = "" ]; then
+      noout=$(curl -s --request POST -H "PRIVATE-TOKEN: ${GL_API_TOKEN}" $GL_API --form "key=KEPTN_API" --form "value=${KEPTN_API}")
+    else
+      noout=$(curl -s --request PUT -H "PRIVATE-TOKEN: ${GL_API_TOKEN}" $GL_API/KEPTN_API --form "value=${KEPTN_API}")
+    fi    
   when: manual  
 
 dt_deploy-eks-oneagent:
