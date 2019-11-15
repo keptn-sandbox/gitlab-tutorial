@@ -132,3 +132,8 @@ dt_deploy-eks-oneagent:
   environment:
     name: test
   when: manual
+
+dt_configure_tenant:
+  environment:
+    name: test
+  when: manual
