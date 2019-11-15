@@ -1,0 +1,7 @@
+{
+    "label": "${K8S_NAME}",
+    "endpointUrl": "${K8SAPI}",
+    "authToken": "${K8STOKEN}",
+    "active": true,
+    "endpointStatus": "ASSIGNED"
+}
