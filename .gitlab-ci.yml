@@ -17,10 +17,23 @@ include:
     file: '/ci-includes/dt_configure_tenant.yml'
 
 stages:
+  - keptn-test
   - aws-eks-provisioning
   - aws-eks-oneagent
   - aws-eks-keptn
   - configure-dynatrace
+
+keptn-test:
+  stage: keptn-test
+  image: registry.gitlab.com/checkelmann/cicd-tools:latest
+  variables:
+      GIT_STRATEGY: none
+  script: |
+    echo $KUBECONFIG
+    cat $KUBECONFIG
+    echo $KUBE_URL
+    echo $KUBE_CA_PEM_FILE
+  when: manual
 
 #################################################################
 # Provisioning Stage
