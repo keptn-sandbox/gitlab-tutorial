@@ -28,11 +28,11 @@ keptn-test:
   image: registry.gitlab.com/checkelmann/cicd-tools:latest
   variables:
       GIT_STRATEGY: none
-  script: |
-    echo $KUBECONFIG
-    cat $KUBECONFIG
-    echo $KUBE_URL
-    echo $KUBE_CA_PEM_FILE
+  script:
+    - echo $KUBECONFIG
+    - cat $KUBECONFIG
+    - echo $KUBE_URL
+    - echo $KUBE_CA_PEM_FILE
   when: manual
 
 #################################################################
