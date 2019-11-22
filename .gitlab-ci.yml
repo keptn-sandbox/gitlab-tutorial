@@ -17,24 +17,23 @@ include:
     file: '/ci-includes/dt_configure_tenant.yml'
 
 stages:
-  - keptn-test
   - aws-eks-provisioning
   - aws-eks-oneagent
   - aws-eks-keptn
   - configure-dynatrace
 
-keptn-test:
-  stage: keptn-test
-  image: registry.gitlab.com/checkelmann/cicd-tools:latest
-  environment:
-    name: test
-  variables:
-      GIT_STRATEGY: none
-  script:
-    - echo $KUBECONFIG
-    - cat $KUBECONFIG
-    - echo $KUBE_URL
-    - echo $KUBE_CA_PEM_FILE
+#keptn-test:
+#  stage: keptn-test
+#  image: registry.gitlab.com/checkelmann/cicd-tools:latest
+#  environment:
+#    name: test
+#  variables:
+#      GIT_STRATEGY: none
+#  script:
+    #- echo $KUBECONFIG
+    #- cat $KUBECONFIG
+    #- echo $KUBE_URL
+    #- echo $KUBE_CA_PEM_FILE
 
 
 #################################################################
@@ -124,6 +123,8 @@ install-keptn:
     aws route53 change-resource-record-sets --hosted-zone-id "${ZONE_ID}" --change-batch "{\"Changes\":[{\"Action\":\"CREATE\",\"ResourceRecordSet\":{\"Name\":\"*.${AWS_ROUTE53_DOMAIN}.\",\"Type\":\"CNAME\",\"TTL\":60,\"ResourceRecords\":[{\"Value\":\"${KEPTN_ENDPOINT}\"}]}}]}" --region us-east-1
     echo "Wait 60sec for DNS Record beeing updated"
     sleep 60
+    mkdir ~/.kube
+    cp $KUBECONFIG ~/.kube/config
     echo y|keptn configure domain ${AWS_ROUTE53_DOMAIN}
     echo "Configure GitLab CI/CD Variable"
     export KEPTN_API=$(head -1 ~/.keptn/.keptn)
