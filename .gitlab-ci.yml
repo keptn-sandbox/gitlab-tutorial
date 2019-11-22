@@ -23,7 +23,7 @@ stages:
   - aws-eks-keptn
   - configure-dynatrace
 
-install-keptn:
+check-installer-log:
   stage: check-installer-log
   image: registry.gitlab.com/checkelmann/cicd-tools:latest
   environment:
