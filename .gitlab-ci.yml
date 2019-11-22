@@ -26,6 +26,8 @@ stages:
 keptn-test:
   stage: keptn-test
   image: registry.gitlab.com/checkelmann/cicd-tools:latest
+  environment:
+    name: test
   variables:
       GIT_STRATEGY: none
   script:
@@ -33,7 +35,7 @@ keptn-test:
     - cat $KUBECONFIG
     - echo $KUBE_URL
     - echo $KUBE_CA_PEM_FILE
-  when: manual
+
 
 #################################################################
 # Provisioning Stage
