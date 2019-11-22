@@ -31,7 +31,7 @@ check-installer-log:
   variables:
       GIT_STRATEGY: none
   script: |
-    kubectl logs installer -c keptn-installer -n default -f
+    kubectl logs installer-gkbqr -c keptn-installer -n default -f
   when: manual  
 #################################################################
 # Provisioning Stage
