@@ -119,7 +119,7 @@ install-keptn:
     eksctl utils update-coredns --name=${cluster_name} --region=${cluster_region} --approve
     echo "Waiting for CoreDNS Update..."
     sleep 20
-    keptn install --platform=eks -c=creds.json --keptn-version=0.5.2|tee inst.out
+    keptn install --platform=eks -c=creds.json|tee inst.out
     export ZONE_ID=$(aws route53 list-hosted-zones-by-name --dns-name=${AWS_ROUTE53_DOMAIN}|jq ".HostedZones[0].Id"|grep -o -P '(?<=hostedzone/).*(?=")')
     export KEPTN_ENDPOINT=$(cat inst.out|grep "set for"|awk {'print $13'})
     aws route53 change-resource-record-sets --hosted-zone-id "${ZONE_ID}" --change-batch "{\"Changes\":[{\"Action\":\"CREATE\",\"ResourceRecordSet\":{\"Name\":\"*.${AWS_ROUTE53_DOMAIN}.\",\"Type\":\"CNAME\",\"TTL\":60,\"ResourceRecords\":[{\"Value\":\"${KEPTN_ENDPOINT}\"}]}}]}" --region us-east-1
@@ -131,18 +131,23 @@ install-keptn:
     export KEPTN_TOKEN=$(tail -1 ~/.keptn/.keptn)
     #POST /projects/:id/variables
     GL_API="${CI_API_V4_URL}projects/${CI_PROJECT_ID}/variables"
-
+    echo $KEPTN_API
+    echo $KEPTN_TOKEN
     TOKEN_EXISTS=$(curl -s --header "PRIVATE-TOKEN: ${GL_API_TOKEN}" $GL_API | jq '.[] | select (.key=="KEPTN_TOKEN")')
+    echo $TOKEN_EXISTS
+    echo $GL_API
+
     if [ "$TOKEN_EXISTS" = "" ]; then
       noout=$(curl -s --request POST -H "PRIVATE-TOKEN: ${GL_API_TOKEN}" $GL_API --form "key=KEPTN_TOKEN" --form "value=${KEPTN_TOKEN}")
     else
-      noout=$(curl -s --request PUT -H "PRIVATE-TOKEN: ${GL_API_TOKEN}" $GL_API/KEPTN_TOKEN --form "value=${KEPTN_TOKEN}")
+      noout=$(curl -s --request PUT -H "PRIVATE-TOKEN: ${GL_API_TOKEN}" "${GL_API}/KEPTN_TOKEN" --form "value=${KEPTN_TOKEN}")
     fi
+
     KEPTN_API_EXISTS=$(curl -s --header "PRIVATE-TOKEN: ${GL_API_TOKEN}" $GL_API | jq '.[] | select (.key=="KEPTN_API")')
-    if [ "$TOKEN_EXISTS" = "" ]; then
+    if [ "$KEPTN_API_EXISTS" = "" ]; then
       noout=$(curl -s --request POST -H "PRIVATE-TOKEN: ${GL_API_TOKEN}" $GL_API --form "key=KEPTN_API" --form "value=${KEPTN_API}")
     else
-      noout=$(curl -s --request PUT -H "PRIVATE-TOKEN: ${GL_API_TOKEN}" $GL_API/KEPTN_API --form "value=${KEPTN_API}")
+      noout=$(curl -s --request PUT -H "PRIVATE-TOKEN: ${GL_API_TOKEN}" "${GL_API}/KEPTN_API" --form "value=${KEPTN_API}")
     fi    
   when: manual  
 
