@@ -133,6 +133,8 @@ install-keptn:
     GL_API="${CI_API_V4_URL}projects/${CI_PROJECT_ID}/variables"
     echo $KEPTN_API
     echo $KEPTN_TOKEN
+    curl -s --header "PRIVATE-TOKEN: ${GL_API_TOKEN}" $GL_API | jq .[]
+    
     TOKEN_EXISTS=$(curl -s --header "PRIVATE-TOKEN: ${GL_API_TOKEN}" $GL_API | jq '.[] | select (.key=="KEPTN_TOKEN")')
     echo $TOKEN_EXISTS
     echo $GL_API
