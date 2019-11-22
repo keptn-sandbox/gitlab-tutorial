@@ -17,11 +17,22 @@ include:
     file: '/ci-includes/dt_configure_tenant.yml'
 
 stages:
+  - check-installer-log
   - aws-eks-provisioning
   - aws-eks-oneagent
   - aws-eks-keptn
   - configure-dynatrace
 
+install-keptn:
+  stage: check-installer-log
+  image: registry.gitlab.com/checkelmann/cicd-tools:latest
+  environment:
+    name: test
+  variables:
+      GIT_STRATEGY: none
+  script: |
+    kubectl logs installer -c keptn-installer -n default -f
+  when: manual  
 #################################################################
 # Provisioning Stage
 #################################################################
