@@ -114,6 +114,8 @@ install-keptn:
     curl -o creds.json https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/keptn_creds.json
     sed -i -- s/CLUSTER_NAME_PLACEHOLDER/${cluster_name}/g creds.json
     sed -i -- s/AWS_REGION/${cluster_region}/g creds.json
+    mkdir ~/.kube
+    cp $KUBECONFIG ~/.kube/config    
     eksctl utils update-coredns --name=${cluster_name} --region=${cluster_region} --approve
     echo "Waiting for CoreDNS Update..."
     sleep 20
@@ -123,8 +125,6 @@ install-keptn:
     aws route53 change-resource-record-sets --hosted-zone-id "${ZONE_ID}" --change-batch "{\"Changes\":[{\"Action\":\"CREATE\",\"ResourceRecordSet\":{\"Name\":\"*.${AWS_ROUTE53_DOMAIN}.\",\"Type\":\"CNAME\",\"TTL\":60,\"ResourceRecords\":[{\"Value\":\"${KEPTN_ENDPOINT}\"}]}}]}" --region us-east-1
     echo "Wait 60sec for DNS Record beeing updated"
     sleep 60
-    mkdir ~/.kube
-    cp $KUBECONFIG ~/.kube/config
     echo y|keptn configure domain ${AWS_ROUTE53_DOMAIN}
     echo "Configure GitLab CI/CD Variable"
     export KEPTN_API=$(head -1 ~/.keptn/.keptn)
