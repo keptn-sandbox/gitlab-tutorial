@@ -118,7 +118,7 @@ install-keptn:
     aws route53 change-resource-record-sets --hosted-zone-id "${ZONE_ID}" --change-batch "{\"Changes\":[{\"Action\":\"CREATE\",\"ResourceRecordSet\":{\"Name\":\"*.${AWS_ROUTE53_DOMAIN}.\",\"Type\":\"CNAME\",\"TTL\":60,\"ResourceRecords\":[{\"Value\":\"${KEPTN_ENDPOINT}\"}]}}]}" --region us-east-1
     echo "Wait 60sec for DNS Record beeing updated"
     sleep 60
-    keptn configure domain ${AWS_ROUTE53_DOMAIN}
+    echo y|keptn configure domain ${AWS_ROUTE53_DOMAIN}
     echo "Configure GitLab CI/CD Variable"
     export KEPTN_API=$(head -1 ~/.keptn/.keptn)
     export KEPTN_TOKEN=$(tail -1 ~/.keptn/.keptn)
