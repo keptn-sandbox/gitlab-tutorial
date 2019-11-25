@@ -112,6 +112,7 @@ install-keptn:
     cluster_name=$(yq r cluster.yml metadata.name)
     cluster_region=$(yq r cluster.yml metadata.region)
     curl -o creds.json https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/keptn_creds.json
+    curl -o bridge.yaml https://raw.githubusercontent.com/keptn-workshops/workshop-utils/0.5.1/scripts/expose-bridge/manifests/bridge.yaml
     sed -i -- s/CLUSTER_NAME_PLACEHOLDER/${cluster_name}/g creds.json
     sed -i -- s/AWS_REGION/${cluster_region}/g creds.json
     mkdir ~/.kube
@@ -119,7 +120,7 @@ install-keptn:
     eksctl utils update-coredns --name=${cluster_name} --region=${cluster_region} --approve
     echo "Waiting for CoreDNS Update..."
     sleep 20
-    keptn install --platform=eks -c=creds.json --keptn-version=bug/1154/eks-install|tee inst.out
+    keptn install --use-case=quality-gates --verbose --platform=eks -c=creds.json --keptn-version=bug/1154/eks-install|tee inst.out
     export ZONE_ID=$(aws route53 list-hosted-zones-by-name --dns-name=${AWS_ROUTE53_DOMAIN}|jq ".HostedZones[0].Id"|grep -o -P '(?<=hostedzone/).*(?=")')
     export KEPTN_ENDPOINT=$(cat inst.out|grep "set for"|awk {'print $13'})
     aws route53 change-resource-record-sets --hosted-zone-id "${ZONE_ID}" --change-batch "{\"Changes\":[{\"Action\":\"CREATE\",\"ResourceRecordSet\":{\"Name\":\"*.${AWS_ROUTE53_DOMAIN}.\",\"Type\":\"CNAME\",\"TTL\":60,\"ResourceRecords\":[{\"Value\":\"${KEPTN_ENDPOINT}\"}]}}]}" --region us-east-1
@@ -129,6 +130,10 @@ install-keptn:
     echo "Configure GitLab CI/CD Variable"
     export KEPTN_API=$(head -1 ~/.keptn/.keptn)
     export KEPTN_TOKEN=$(tail -1 ~/.keptn/.keptn)
+
+    # Create bridge    
+    sed -i -- s/DOMAIN_PLACEHOLDER/${AWS_ROUTE53_DOMAIN}/g bridge.yaml
+    kubectl apply -f bridge.yaml
     #POST /projects/:id/variables
     GL_API="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/variables"
     echo $KEPTN_API
