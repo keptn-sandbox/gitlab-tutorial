@@ -130,7 +130,7 @@ install-keptn:
     export KEPTN_API=$(head -1 ~/.keptn/.keptn)
     export KEPTN_TOKEN=$(tail -1 ~/.keptn/.keptn)
     #POST /projects/:id/variables
-    GL_API="${CI_API_V4_URL}projects/${CI_PROJECT_ID}/variables"
+    GL_API="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/variables"
     echo $KEPTN_API
     #echo $KEPTN_TOKEN
     curl -s --header "PRIVATE-TOKEN: ${GL_API_TOKEN}" $GL_API | jq .[]
