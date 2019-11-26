@@ -221,7 +221,7 @@ configure-quality-stage:
     curl -o dynatrace_sli.yaml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/dynatrace_sli
     curl -o dynatrace_slo.yaml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/dynatrace_slo
     KEPTN_ENDPOINT=https://api.keptn.$(kubectl get cm keptn-domain -n keptn -ojsonpath={.data.app_domain})
-    KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
+    KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 -d)
     keptn auth -a $KEPTN_API_TOKEN -e $KEPTN_ENDPOINT
     keptn create project $APPLICATION_SHORT_NAME --shipyard=./shipyard.yaml --git-user=$GITLAB_USER_LOGIN --git-token=$KEPTN_GL_TOKEN --git-remote-url=$KEPTN_GL_REPO
     keptn create service $APPLICATION_SHORT_NAME --project=$APPLICATION_SHORT_NAME
