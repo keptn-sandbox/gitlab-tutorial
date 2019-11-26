@@ -1,11 +1,9 @@
 #!/bin/bash
 source ./utils.sh
 
-DT_TENANT=$(cat creds_dt.json | jq -r '.dynatraceTenant')
-DT_API_TOKEN=$(cat creds_dt.json | jq -r '.dynatraceApiToken')
-DT_PAAS_TOKEN=$(cat creds_dt.json | jq -r '.dynatracePaaSToken')
-
 kubectl label namespace dynatrace istio-injection=disabled
+
+DT_TENANT="${DT_TENANT_ID}.live.dynatrace.com"
 
 # Apply auto tagging rules in Dynatrace
 print_info "Applying auto tagging rules in Dynatrace."
