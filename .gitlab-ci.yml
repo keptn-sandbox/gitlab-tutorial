@@ -241,7 +241,12 @@ configure-quality-stage:
     kubectl apply -f tmp.yaml
     
     DT_TENANT="${DT_TENANT_ID}.live.dynatrace.com"
-    DT_API_TOKEN: $DT_API_TOKEN" > dynatrace_secret.yaml
+    
+    cat << EOF > dynatrace_secret.yaml
+    DT_TENANT: $DT_TENANT
+    DT_API_TOKEN: $DT_API_TOKEN
+    EOF
+
     SECRET=$(kubectl get secret -n keptn -ojson|grep dynatrace-credentials-$APPLICATION_SHORT_NAME)
 
     if [ "$SECRET" = "" ]; then
