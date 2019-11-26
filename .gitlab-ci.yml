@@ -19,8 +19,9 @@ include:
 stages:
   - aws-eks-provisioning
   - aws-eks-oneagent
-  - aws-eks-keptn
   - configure-dynatrace
+  - aws-eks-keptn
+  - keptn-sli-service
 
 #keptn-test:
 #  stage: keptn-test
@@ -156,6 +157,49 @@ install-keptn:
     else
       noout=$(curl -s --request PUT -H "PRIVATE-TOKEN: ${GL_API_TOKEN}" "${GL_API}/KEPTN_API" --form "value=${KEPTN_API}")
     fi    
+  when: manual  
+
+###############################################################################
+# Configure keptn SLI Service
+###############################################################################
+
+keptn-sli-service:
+  stage: keptn-sli-service
+  image: registry.gitlab.com/checkelmann/cicd-tools:latest
+  environment:
+    name: test
+  variables:
+      GIT_STRATEGY: none
+  script: |
+    # Add Git and clone dynatrace-service repository
+    cd ~
+    apk add git
+    git clone --branch 0.4.0 https://github.com/keptn-contrib/dynatrace-service --single-branch
+    # Copy Kubeconfig to expected Keptn Location
+    mkdir ~/.kube
+    cp $KUBECONFIG ~/.kube/config    
+    # Export DT_TENANT_ID and TOKEN as expected Env Vars
+    export DT_TENANT=$DT_TENANT_ID
+
+    cd dynatrace-service/deploy/scripts
+    # Creating credentials file with CI Variables
+    CREDS=./creds_dt.json
+    rm $CREDS 2> /dev/null
+    cat ./creds_dt.sav | sed 's~DYNATRACE_TENANT_PLACEHOLDER~'"$DT_TENANT_ID"'~' | \
+      sed 's~DYNATRACE_API_TOKEN~'"$DT_API_TOKEN"'~' | \
+      sed 's~DYNATRACE_PAAS_TOKEN~'"$DT_PAAS_TOKEN"'~' >> $CREDS    
+
+    curl -o deployDynatraceCommon.sh https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/deployDynatraceCommon.sh
+    source ./deployDynatraceCommon.sh
+    deploy_dt
+
+    cd ~
+
+    echo "Install SLI Service..."
+    mkdir sli-service
+    curl -s -o sli-service/distributor.yaml https://raw.githubusercontent.com/keptn-contrib/dynatrace-sli-service/release-0.1.0/deploy/distributor.yaml
+    curl -s -o sli-service/service.yaml https://raw.githubusercontent.com/keptn-contrib/dynatrace-sli-service/release-0.1.0/deploy/service.yaml
+    kubectl apply -f sli-service/
   when: manual  
 
 dt_deploy-eks-oneagent:
