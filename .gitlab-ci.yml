@@ -7,7 +7,7 @@
 #################################################################
 variables:
   APPLICATION_NAME: sample-app
-  APPLICATION_SHORT_NAME: sample-app
+  APPLICATION_SHORT_NAME: sampleapp
 
 include: 
   - local: 'ci-includes/dt_create_deployment_event.yaml'
@@ -47,7 +47,7 @@ deploy-application:
   variables:
     GIT_STRATEGY: fetch
   script: |
-    helm upgrade --install --namespace=${CI_ENVIRONMENT_SLUG} sample-app ./chart/
+    helm upgrade --install --namespace=${CI_ENVIRONMENT_SLUG} ${APPLICATION_SHORT_NAME} ./chart/
   only:
     - tags  
 
