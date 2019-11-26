@@ -250,9 +250,11 @@ configure-quality-stage:
     cat dynatrace_secret.yaml
     
     echo "Checking for secrets..."
-    kubectl get secret -n keptn -ojson|grep "dynatrace-credentials-${APPLICATION_SHORT_NAME}"
+    kubectl get secret -n keptn dynatrace-credentials-${APPLICATION_SHORT_NAME} || true
+    echo $?
 
-    SECRET=$(kubectl get secret -n keptn -ojson|grep "dynatrace-credentials-${APPLICATION_SHORT_NAME}")
+    SECRET=$(kubectl get secret -n keptn dynatrace-credentials-${APPLICATION_SHORT_NAME} || true)
+    echo $?
 
     if [ "$SECRET" = "" ]; then
       echo "Creating new Secret"
