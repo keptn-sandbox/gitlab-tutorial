@@ -211,7 +211,7 @@ configure-quality-stage:
     name: test
   variables:
       GIT_STRATEGY: none
-      APPLICATION_SHORT_NAME: sample-app
+      APPLICATION_SHORT_NAME: sampleapp
   script: |
     echo "Copy Kubeconfig to expected Keptn Location"
     mkdir ~/.kube
