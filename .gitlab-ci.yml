@@ -175,7 +175,6 @@ keptn-sli-service:
     cd ~
     apk add git
     git clone --branch 0.4.0 https://github.com/keptn-contrib/dynatrace-service --single-branch
-    echo $?
     echo "Copy Kubeconfig to expected Keptn Location"
     mkdir ~/.kube
     cp $KUBECONFIG ~/.kube/config    
@@ -185,7 +184,6 @@ keptn-sli-service:
     cd dynatrace-service/deploy/scripts
     echo "Creating credentials file with CI Variables"
     CREDS=./creds_dt.json
-    rm $CREDS 2> /dev/null
     cat ./creds_dt.sav | sed 's~DYNATRACE_TENANT_PLACEHOLDER~'"$DT_TENANT_ID"'~' | \
       sed 's~DYNATRACE_API_TOKEN~'"$DT_API_TOKEN"'~' | \
       sed 's~DYNATRACE_PAAS_TOKEN~'"$DT_PAAS_TOKEN"'~' >> $CREDS    
@@ -194,9 +192,7 @@ keptn-sli-service:
     curl -o deployDynatraceCommon.sh https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/deployDynatraceCommon.sh
     source ./deployDynatraceCommon.sh
     deploy_dt
-
     cd ~
-
     echo "Install SLI Service..."
     mkdir sli-service
     curl -s -o sli-service/distributor.yaml https://raw.githubusercontent.com/keptn-contrib/dynatrace-sli-service/release-0.1.0/deploy/distributor.yaml
