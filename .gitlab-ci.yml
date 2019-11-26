@@ -22,6 +22,7 @@ stages:
   - configure-dynatrace
   - aws-eks-keptn
   - keptn-sli-service
+  - configure-quality-stage
 
 #keptn-test:
 #  stage: keptn-test
@@ -197,6 +198,51 @@ keptn-sli-service:
     curl -s -o sli-service/distributor.yaml https://raw.githubusercontent.com/keptn-contrib/dynatrace-sli-service/release-0.1.0/deploy/distributor.yaml
     curl -s -o sli-service/service.yaml https://raw.githubusercontent.com/keptn-contrib/dynatrace-sli-service/release-0.1.0/deploy/service.yaml
     kubectl apply -f sli-service/
+  when: manual  
+
+###############################################################################
+# Configure keptn SLI Service
+###############################################################################
+
+configure-quality-stage:
+  stage: configure-quality-stage
+  image: registry.gitlab.com/checkelmann/cicd-tools:latest
+  environment:
+    name: test
+  variables:
+      GIT_STRATEGY: none
+      APPLICATION_SHORT_NAME: sample-app
+  script: |
+    echo "Copy Kubeconfig to expected Keptn Location"
+    mkdir ~/.kube
+    cp $KUBECONFIG ~/.kube/config    
+
+    curl -o shipyard.yaml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/shipyard.yaml
+    curl -o dynatrace_sli.yaml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/dynatrace_sli
+    curl -o dynatrace_slo.yaml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/dynatrace_slo
+    KEPTN_ENDPOINT=https://api.keptn.$(kubectl get cm keptn-domain -n keptn -ojsonpath={.data.app_domain})
+    KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 --decode)
+    keptn auth -a $KEPTN_API_TOKEN -e $KEPTN_ENDPOINT
+    keptn create project $APPLICATION_SHORT_NAME --shipyard=./shipyard.yaml --git-user=$GITLAB_USER_LOGIN --git-token=$KEPTN_GL_TOKEN --git-remote-url=$KEPTN_GL_REPO
+    keptn create service $APPLICATION_SHORT_NAME --project=$APPLICATION_SHORT_NAME
+
+    echo "Configure lighthouse"
+    cat << EOF > tmp.yaml
+    apiVersion: v1
+    data:
+      sli-provider: dynatrace
+    kind: ConfigMap
+    metadata:
+      name: lighthouse-config-${APPLICATION_SHORT_NAME}
+      namespace: keptn
+    EOF
+    kubectl apply -f tmp.yaml
+    DT_TENANT="${DT_TENANT_ID}.live.dynatrace.com"
+    echo "DT_TENANT: $DT_TENANT
+    DT_API_TOKEN: $DT_API_TOKEN" > dynatrace_secret.yaml
+    kubectl create secret generic dynatrace-credentials-$APPLICATION_SHORT_NAME -n "keptn" --from-file=dynatrace-credentials=dynatrace_secret.yaml    
+    kubectl apply -f dynatrace_sli.yaml
+    keptn add-resource --project=$APPLICATION_SHORT_NAME --service=$APPLICATION_SHORT_NAME --stage=$CI_ENVIRONMENT_SLUG --resource=dynatrace_slo.yaml --resourceUri=slo.yaml
   when: manual  
 
 dt_deploy-eks-oneagent:
