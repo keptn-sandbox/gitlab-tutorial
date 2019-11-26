@@ -190,8 +190,7 @@ keptn-sli-service:
 
     echo "Running deployDynatraceCommon.sh"
     curl -o deployDynatraceCommon.sh https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/deployDynatraceCommon.sh
-    source ./deployDynatraceCommon.sh
-    deploy_dt
+    bash ./deployDynatraceCommon.sh    
     cd ~
     echo "Install SLI Service..."
     mkdir sli-service
