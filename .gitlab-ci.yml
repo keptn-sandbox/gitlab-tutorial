@@ -223,7 +223,6 @@ configure-quality-stage:
     KEPTN_ENDPOINT=https://api.keptn.$(kubectl get cm keptn-domain -n keptn -ojsonpath={.data.app_domain})
     KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 -d)
     keptn auth -a $KEPTN_API_TOKEN -e $KEPTN_ENDPOINT
-    echo $GITLAB_USER_LOGIN
 
     keptn create project $APPLICATION_SHORT_NAME --shipyard=./shipyard.yaml --git-user=$GITLAB_USER_LOGIN --git-token="${KEPTN_GL_TOKEN}" --git-remote-url=$KEPTN_GL_REPO
     keptn create service $APPLICATION_SHORT_NAME --project=$APPLICATION_SHORT_NAME
@@ -238,12 +237,15 @@ configure-quality-stage:
       name: lighthouse-config-${APPLICATION_SHORT_NAME}
       namespace: keptn
     EOF
+    cat tmp.yaml
     kubectl apply -f tmp.yaml
+    
     DT_TENANT="${DT_TENANT_ID}.live.dynatrace.com"
     echo "DT_TENANT: $DT_TENANT
     DT_API_TOKEN: $DT_API_TOKEN" > dynatrace_secret.yaml
     SECRET=$(kubectl get secret -n keptn -ojson|grep dynatrace-credentials-$APPLICATION_SHORT_NAME)
-    if [ "$SECRET" = "" ]; then
+    if [ "$SECRET" == "" ]; then
+      echo "Creating new Secret"
       kubectl create secret generic dynatrace-credentials-$APPLICATION_SHORT_NAME -n "keptn" --from-file=dynatrace-credentials=dynatrace_secret.yaml
     else
       echo "Recreating Secret"
