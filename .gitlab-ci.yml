@@ -82,7 +82,7 @@ dt_get_problems:
 dt_performance:
   only:
     - tags
-  needs: ["dt_create_deployment_event"]
+  #needs: ["dt_create_deployment_event"]
 
 deploy-to-prod:
   stage: chatops
