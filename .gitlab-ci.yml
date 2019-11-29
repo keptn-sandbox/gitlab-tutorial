@@ -14,6 +14,7 @@ include:
   - local: 'ci-includes/dt_create_synthetic_check.yaml'
   - local: 'ci-includes/dt_get_problems.yaml'
   - local: 'ci-includes/dt_get_performance.yaml'
+  - local: 'ci-includes/keptn_evaluation.yaml'
 
 stages:
   - build
