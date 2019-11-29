@@ -2,7 +2,7 @@
 
 # Configure Dynatrace Tenant
 echo Configuring tenant $DT_TENANT_ID
-set -x
+
 API="https://${DT_TENANT_ID}.live.dynatrace.com/api/config/v1/autoTags"
 
 # Check if rule already exists...
@@ -12,7 +12,7 @@ if [ -z "$tgrp" ]; then
     curl -s -H "Authorization: Api-Token ${DT_API_TOKEN}" \
       -H 'Content-Type: application/json' \
       -X POST ${API} \
-      -d @deployment_group.json
+      -d @dt_rule_deployment_group.json
 else
     echo "Rule process_group exists."
 fi
@@ -22,7 +22,7 @@ if [ -z "$tgrp" ]; then
     curl -s -H "Authorization: Api-Token ${DT_API_TOKEN}" \
       -H 'Content-Type: application/json' \
       -X POST ${API} \
-      -d @app.json
+      -d @dt_rule_app.json
 else
     echo "Rule environment exists."
 fi
@@ -32,7 +32,7 @@ if [ -z "$tgrp" ]; then
     curl -s -H "Authorization: Api-Token ${DT_API_TOKEN}" \
       -H 'Content-Type: application/json' \
       -X POST ${API} \
-      -d @environment.json
+      -d @dt_rule_environment.json
 else
     echo "Rule app exists."
 fi
