@@ -66,6 +66,13 @@ dt_create_synthetic_check:
   only:
     - tags  
 
+keptn_evaluation:
+  environment:
+    name: test
+  only:
+    - tags  
+  start_in: 10 minutes  
+  when: delayed    
 
 dt_get_problems:
   only:
