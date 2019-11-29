@@ -2,7 +2,7 @@
 
 # Configure Dynatrace Tenant
 echo Configuring tenant $DT_TENANT_ID
-
+set -x
 API="https://${DT_TENANT_ID}.live.dynatrace.com/api/config/v1/autoTags"
 
 # Check if rule already exists...
@@ -36,3 +36,4 @@ if [ -z "$tgrp" ]; then
 else
     echo "Rule app exists."
 fi
+set +x

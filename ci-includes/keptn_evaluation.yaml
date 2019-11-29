@@ -1,0 +1,16 @@
+keptn_evaluation:
+  stage: verify
+  image: registry.gitlab.com/checkelmann/cicd-tools:latest  
+  script: |
+    # Log into keptn
+    # ${CI_ENVIRONMENT_SLUG}&tag=app:${APPLICATION_SHORT_NAME}
+    KEPTN_ENDPOINT=https://api.keptn.$(kubectl get cm keptn-domain -n keptn -ojsonpath={.data.app_domain})
+    KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 -d)
+    keptn auth -a $KEPTN_API_TOKEN -e $KEPTN_ENDPOINT
+
+    # Start evaluation
+    keptn send event start-evaluation --project=${APPLICATION_SHORT_NAME} --service=${APPLICATION_SHORT_NAME} --stage=${CI_ENVIRONMENT_SLUG} --timeframe=10m
+    
+    #Starting to send a start-evaluation event to evaluate the service sampleapp in project sampleapp
+    #ID of Keptn context: 3e1aaaab-23a2-4fe6-812a-f9c12c9e575d
+    # 
