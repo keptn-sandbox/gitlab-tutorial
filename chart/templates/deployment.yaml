@@ -42,7 +42,7 @@ spec:
           env:
             - name: DT_CUSTOM_PROP
               # value: environment={{ .Values.ci_environment_slug }} app={{ include "application.name" . }} DEPLOYMENT_GROUP_NAME={{ include "application.name" . }}-{{ .Values.ci_environment_slug }} VERSION={{ .Values.image.tag }} DEPLOYMENT_ID={{ .Values.ci_job_id }}
-              value: "keptn_project={{ include "application.name" . }} keptn_service={{ include "application.name" . }}  keptn_stage={{ .Values.ci_environment_slug }} keptn_deployment=direct" environment={{ .Values.ci_environment_slug }} app={{ include "application.name" . }} DEPLOYMENT_GROUP_NAME={{ include "application.name" . }}-{{ .Values.ci_environment_slug }} VERSION={{ .Values.image.tag }} DEPLOYMENT_ID={{ .Values.ci_job_id }}
+              value: "keptn_project={{ include "application.name" . }} keptn_service={{ include "application.name" . }} keptn_stage={{ .Values.ci_environment_slug }} keptn_deployment=direct environment={{ .Values.ci_environment_slug }} app={{ include "application.name" . }} DEPLOYMENT_GROUP_NAME={{ include "application.name" . }}-{{ .Values.ci_environment_slug }} VERSION={{ .Values.image.tag }} DEPLOYMENT_ID={{ .Values.ci_job_id }}
           {{- if .Values.persistentVolume.enabled }}
           volumeMounts:
           {{ range $data := .Values.persistentVolume.volumes -}}
