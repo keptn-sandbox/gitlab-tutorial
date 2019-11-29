@@ -218,8 +218,8 @@ configure-quality-stage:
     cp $KUBECONFIG ~/.kube/config    
 
     curl -o shipyard.yaml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/shipyard.yaml
-    curl -o dynatrace_sli.yaml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/dynatrace_sli
-    curl -o dynatrace_slo.yaml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/dynatrace_slo
+    curl -o dynatrace_sli.yaml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/dynatrace_sli.yaml
+    curl -o dynatrace_slo.yaml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/dynatrace_slo.yaml
     KEPTN_ENDPOINT=https://api.keptn.$(kubectl get cm keptn-domain -n keptn -ojsonpath={.data.app_domain})
     KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 -d)
     keptn auth -a $KEPTN_API_TOKEN -e $KEPTN_ENDPOINT
@@ -264,7 +264,7 @@ configure-quality-stage:
       kubectl delete secret dynatrace-credentials-$APPLICATION_SHORT_NAME -n "keptn"
       kubectl create secret generic dynatrace-credentials-$APPLICATION_SHORT_NAME -n "keptn" --from-file=dynatrace-credentials=dynatrace_secret.yaml
     fi
-
+    cat dynatrace_sli.yaml
     kubectl apply -f dynatrace_sli.yaml
     keptn add-resource --project=$APPLICATION_SHORT_NAME --service=$APPLICATION_SHORT_NAME --stage=$CI_ENVIRONMENT_SLUG --resource=dynatrace_slo.yaml --resourceUri=slo.yaml
   when: manual  
