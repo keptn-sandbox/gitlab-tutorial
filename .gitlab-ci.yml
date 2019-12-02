@@ -147,14 +147,14 @@ install-keptn:
     echo $GL_API
 
     if [ "$TOKEN_EXISTS" = "" ]; then
-      noout=$(curl -s --request POST -H "PRIVATE-TOKEN: ${GL_API_TOKEN}" $GL_API --form "key=KEPTN_TOKEN" --form "value=${KEPTN_TOKEN}")
+      noout=$(curl -s --request POST -H "PRIVATE-TOKEN: ${GL_API_TOKEN}" $GL_API --form "key=KEPTN_TOKEN" --form "value=${KEPTN_TOKEN}" --form "masked=true")
     else
       noout=$(curl -s --request PUT -H "PRIVATE-TOKEN: ${GL_API_TOKEN}" "${GL_API}/KEPTN_TOKEN" --form "value=${KEPTN_TOKEN}")
     fi
 
     KEPTN_API_EXISTS=$(curl -s --header "PRIVATE-TOKEN: ${GL_API_TOKEN}" $GL_API | jq '.[] | select (.key=="KEPTN_API")')
     if [ "$KEPTN_API_EXISTS" = "" ]; then
-      noout=$(curl -s --request POST -H "PRIVATE-TOKEN: ${GL_API_TOKEN}" $GL_API --form "key=KEPTN_API" --form "value=${KEPTN_API}")
+      noout=$(curl -s --request POST -H "PRIVATE-TOKEN: ${GL_API_TOKEN}" $GL_API --form "key=KEPTN_API" --form "value=${KEPTN_API}"  --form "masked=true")
     else
       noout=$(curl -s --request PUT -H "PRIVATE-TOKEN: ${GL_API_TOKEN}" "${GL_API}/KEPTN_API" --form "value=${KEPTN_API}")
     fi    
