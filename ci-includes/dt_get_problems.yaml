@@ -19,6 +19,6 @@ dt_get_problems:
       python /sendslack.py "A problem has been detected with your deployment. Please check https://${DT_TENANT_ID}.live.dynatrace.com/#problems/problemdetails;pid=${problemid}"
       exit 1
     fi
-  when: delayed
-  start_in: 10 minutes  
+  #when: delayed
+  #start_in: 10 minutes  
 
