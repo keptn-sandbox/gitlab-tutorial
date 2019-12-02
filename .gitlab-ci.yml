@@ -71,7 +71,7 @@ keptn_evaluation:
   environment:
     name: test
   only:
-    - tags  
+    - manual  
   start_in: 10 minutes  
   when: delayed    
 
@@ -79,7 +79,7 @@ dt_get_problems:
   environment:
     name: test
   only:
-    - tags
+    - manual
 
 dt_performance:
   only:
