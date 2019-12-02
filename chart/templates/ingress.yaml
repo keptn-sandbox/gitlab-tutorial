@@ -12,8 +12,6 @@ metadata:
     synop/create: "true"
     synop/endpoint: "/service/ping"
     synop/synthetic.location: "private"
-    synop/synthetic.tags: "opa,oma"
-    synop/synthetic.frequencyMin: "10"
   labels:
 {{ include "application.labels" . | indent 4 }}
 spec:
