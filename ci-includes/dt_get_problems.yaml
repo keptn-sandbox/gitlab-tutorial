@@ -16,6 +16,7 @@ dt_get_problems:
       echo $problems|jq .id
       echo $problems|jq .rankedImpacts[0]
       echo "https://${DT_TENANT_ID}.live.dynatrace.com/#problems/problemdetails;pid=${problemid}"
+      python /sendslack.py "A problem has been detected with your deployment. Please check https://${DT_TENANT_ID}.live.dynatrace.com/#problems/problemdetails;pid=${problemid}"
       exit 1
     fi
   when: delayed
