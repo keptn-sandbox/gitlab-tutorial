@@ -70,16 +70,14 @@ dt_create_synthetic_check:
 keptn_evaluation:
   environment:
     name: test
-  only:
-    - manual  
+  when: manual  
   start_in: 10 minutes  
   when: delayed    
 
 dt_get_problems:
   environment:
     name: test
-  only:
-    - manual
+  when: manual
 
 dt_performance:
   only:
