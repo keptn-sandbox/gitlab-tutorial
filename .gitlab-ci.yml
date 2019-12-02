@@ -76,6 +76,8 @@ keptn_evaluation:
   when: delayed    
 
 dt_get_problems:
+  environment:
+    name: test
   only:
     - tags
 

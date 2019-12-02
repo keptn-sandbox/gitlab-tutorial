@@ -10,3 +10,4 @@ before.json
 after.json
 problems.json
 error.sh
+create_problem.sh
