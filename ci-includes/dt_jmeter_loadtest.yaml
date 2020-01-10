@@ -17,7 +17,7 @@ generate-load:
       -JThinkTime=250 \
       -JDT_LTN="PerfCheck_${CI_COMMIT_SHA}"
     
-    cat ${CI_ENVIRONMENT_SLUG}_perf.tlf
+    #cat ${CI_ENVIRONMENT_SLUG}_perf.tlf
   artifacts:
     paths:
       - ${CI_ENVIRONMENT_SLUG}_perf.tlf
