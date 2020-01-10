@@ -8,6 +8,13 @@ keptn_evaluation:
     KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 -d)
     keptn auth -a $KEPTN_API_TOKEN -e $KEPTN_ENDPOINT
 
+    # Get timestamp from last deployment event
+    #entityId=$(curl -s -X GET "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/entity/services?tag=environment:${CI_ENVIRONMENT_SLUG}&tag=app:${APPLICATION_SHORT_NAME}&relativeTime=5mins" -H "Authorization: Api-Token ${DT_API_TOKEN}" | jq .[].entityId)
+    #entityId=$(echo "$entityId" | sed -e 's/^"//' -e 's/"$//')
+    #timeTo=$(curl -s -H "Authorization: Api-Token ${DT_API_TOKEN}"  "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/events?eventType=CUSTOM_DEPLOYMENT&entityId=${entityId}" | jq .events[0].startTime)
+    #timeFrom=$((timeTo - 10 * 60 * 1000))
+    #echo Last Deployment at $(date -d @$(echo "(${timeTo} + 500) / 1000" | bc)), getting timeseries from $(date -d @$(echo "(${timeFrom} + 500) / 1000" | bc))
+
     # Start evaluation
     ctxid=$(keptn send event start-evaluation --project=${APPLICATION_SHORT_NAME} --service=${APPLICATION_SHORT_NAME} --stage=${CI_ENVIRONMENT_SLUG} --timeframe=10m|tee tk|grep "context:"|awk {'print $5'})
     cat tk
@@ -24,7 +31,7 @@ keptn_evaluation:
     fin="0"
     until [ "$fin" = "1" ]
     do
-        status=$(curl -s -k -X GET "${KEPTN_ENDPOINT}/v1/event?keptnContext=${ctxid}&type=sh.keptn.events.evaluation-done" -H "accept: application/json" -H "x-token: ${KEPTN_API_TOKEN}"|jq .data.evaluationdetails.status)
+        status=$(curl -s -k -X GET "${KEPTN_ENDPOINT}/v1/event?keptnContext=${ctxid}&type=sh.keptn.events.evaluation-done" -H "accept: application/json" -H "x-token: ${KEPTN_API_TOKEN}"|jq .data.evaluationdetails.result)
         if [ "$status" = "null" ]; then
             echo "Status null will wait..."
             sleep 5
