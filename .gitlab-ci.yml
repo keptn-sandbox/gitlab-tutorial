@@ -73,12 +73,14 @@ dt_create_synthetic_check:
 create-keptn-qualitygate:
   environment:
     name: test
-  when: manual
+  only:
+    - tags  
 
 generate-load:    
   environment:
     name: test
-  when: manual
+  only:
+    - tags  
 
 keptn_evaluation:
   environment:
