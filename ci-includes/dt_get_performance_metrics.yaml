@@ -3,7 +3,7 @@
   variables:
       GIT_STRATEGY: none
   script: |
-    entityId=$(curl -X GET "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/entity/services?tag=environment:${CI_ENVIRONMENT_SLUG}&tag=app:${APPLICATION_SHORT_NAME}" -H "Authorization: Api-Token ${DT_API_TOKEN}" | jq .[].entityId)
+    entityId=$(curl -X GET "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/entity/services?tag=keptn_stage:${CI_ENVIRONMENT_SLUG}&tag=keptn_service:${APPLICATION_SHORT_NAME}" -H "Authorization: Api-Token ${DT_API_TOKEN}" | jq .[].entityId)
     entityId=$(sed -e 's/^"//' -e 's/"$//' <<<"$entityId")
 
     curl -X GET \

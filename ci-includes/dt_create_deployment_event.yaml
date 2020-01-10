@@ -20,8 +20,8 @@ dt_create_deployment_event:
             \"tags\" : [ 
               {
                 \"context\": \"CONTEXTLESS\",
-                \"key\": \"deployment_group\", 
-                \"value\": \"${APPLICATION_SHORT_NAME}-${CI_ENVIRONMENT_NAME}\"
+                \"key\": \"keptn_service\", 
+                \"value\": \"${APPLICATION_SHORT_NAME}\"
               }
             ]
         }

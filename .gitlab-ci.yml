@@ -51,7 +51,10 @@ deploy-application:
   variables:
     GIT_STRATEGY: fetch
   script: |
-    helm upgrade --install --namespace=${CI_ENVIRONMENT_SLUG} ${APPLICATION_SHORT_NAME} ./chart/
+    helm upgrade --install \
+      --set ci_environment_slug=${CI_ENVIRONMENT_SLUG} \
+      --set ci_project_path_slug=${CI_PROJECT_PATH_SLUG} \
+      --namespace=${CI_ENVIRONMENT_SLUG} ${APPLICATION_SHORT_NAME} ./chart/
   only:
     - tags  
 

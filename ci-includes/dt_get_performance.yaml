@@ -6,7 +6,7 @@ dt_performance:
   start_in: 10 minutes  
   when: delayed
   script: |
-    entityId=$(curl -s -X GET "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/entity/services?tag=environment:${CI_ENVIRONMENT_SLUG}&tag=app:${APPLICATION_SHORT_NAME}&relativeTime=5mins" -H "Authorization: Api-Token ${DT_API_TOKEN}" | jq .[].entityId)
+    entityId=$(curl -s -X GET "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/entity/services?tag=keptn_stage:${CI_ENVIRONMENT_SLUG}&tag=keptn_service:${APPLICATION_SHORT_NAME}&relativeTime=5mins" -H "Authorization: Api-Token ${DT_API_TOKEN}" | jq .[].entityId)
     entityId=$(echo "$entityId" | sed -e 's/^"//' -e 's/"$//')
     timeTo=$(curl -s -H "Authorization: Api-Token ${DT_API_TOKEN}"  "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/events?eventType=CUSTOM_DEPLOYMENT&entityId=${entityId}" | jq .events[0].startTime)
     timeFrom=$((timeTo - 10 * 60 * 1000))

@@ -73,6 +73,9 @@ dt_create_synthetic_check:
       \"tags\": [
         \"environment:${CI_ENVIRONMENT_SLUG}\",
         \"app:${APPLICATION_SHORT_NAME}\",
+        \"keptn_stage:${CI_ENVIRONMENT_SLUG}\",
+        \"keptn_project:${APPLICATION_SHORT_NAME}\",
+        \"keptn_service:${APPLICATION_SHORT_NAME}\",
         \"support_24x7:false\",
         \"alert_group:ops\"
       ]
