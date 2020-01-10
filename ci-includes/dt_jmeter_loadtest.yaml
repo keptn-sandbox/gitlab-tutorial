@@ -1,5 +1,5 @@
 generate-load:
-  image: registry.gitlab.com/checkelmann/jmeter-runner:latest
+  image: registry.gitlab.com/checkelmann/cicd-tools:latest
   stage: test
   variables:
     GIT_STRATEGY: fetch

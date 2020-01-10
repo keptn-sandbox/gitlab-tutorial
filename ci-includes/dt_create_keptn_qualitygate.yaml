@@ -17,24 +17,25 @@ create-keptn-qualitygate:
 
     # Check if project and service is already installed
 
-    service_exists=$(kubectl get cm lighthouse-config-${APPLICATION_SHORT_NAME} -n keptn || true)
+    SERVICE=$(kubectl get cm lighthouse-config-${APPLICATION_SHORT_NAME} -n keptn || true)
 
     # If not:
-    if [ "$service_exists" = "" ]; then
+    if [ "$SERVICE" = "" ]; then
       echo "Keptn project not found. Creating a new project and service..."
       keptn create project $APPLICATION_SHORT_NAME --shipyard=./shipyard.yaml --git-user=$GITLAB_USER_LOGIN --git-token="${KEPTN_GL_TOKEN}" --git-remote-url=$KEPTN_GL_REPO
       keptn create service $APPLICATION_SHORT_NAME --project=$APPLICATION_SHORT_NAME
 
       echo "Configure lighthouse"
-      cat << EOF > tmp.yaml
-      apiVersion: v1
-      data:
-        sli-provider: dynatrace
-      kind: ConfigMap
-      metadata:
-        name: lighthouse-config-${APPLICATION_SHORT_NAME}
-        namespace: keptn
-      EOF
+    cat << EOF > tmp.yaml
+    apiVersion: v1
+    data:
+      sli-provider: dynatrace
+    kind: ConfigMap
+    metadata:
+      name: lighthouse-config-${APPLICATION_SHORT_NAME}
+      namespace: keptn
+    EOF
+    
       cat tmp.yaml
       kubectl apply -f tmp.yaml
     fi
