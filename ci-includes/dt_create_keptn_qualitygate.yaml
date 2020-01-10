@@ -1,0 +1,69 @@
+create-keptn-qualitygate:
+  stage: deploy
+  image: registry.gitlab.com/checkelmann/cicd-tools:latest
+  variables:
+      GIT_STRATEGY: fetch
+  script: |
+    echo "Copy Kubeconfig to expected Keptn Location"
+    mkdir ~/.kube
+    cp $KUBECONFIG ~/.kube/config    
+
+    # curl -o shipyard.yaml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/shipyard.yaml
+    # curl -o dynatrace_sli.yaml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/dynatrace_sli.yaml
+    # curl -o dynatrace_slo.yaml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/dynatrace_slo.yaml
+    KEPTN_ENDPOINT=https://api.keptn.$(kubectl get cm keptn-domain -n keptn -ojsonpath={.data.app_domain})
+    KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 -d)
+    keptn auth -a $KEPTN_API_TOKEN -e $KEPTN_ENDPOINT
+
+    # Check if project and service is already installed
+
+    service_exists=$(kubectl get cm lighthouse-config-${APPLICATION_SHORT_NAME} -n keptn || true)
+
+    # If not:
+    if [ "$service_exists" = "" ]; then
+      keptn create project $APPLICATION_SHORT_NAME --shipyard=./shipyard.yaml --git-user=$GITLAB_USER_LOGIN --git-token="${KEPTN_GL_TOKEN}" --git-remote-url=$KEPTN_GL_REPO
+      keptn create service $APPLICATION_SHORT_NAME --project=$APPLICATION_SHORT_NAME
+
+      echo "Configure lighthouse"
+      cat << EOF > tmp.yaml
+      apiVersion: v1
+      data:
+        sli-provider: dynatrace
+      kind: ConfigMap
+      metadata:
+        name: lighthouse-config-${APPLICATION_SHORT_NAME}
+        namespace: keptn
+      EOF
+      cat tmp.yaml
+      kubectl apply -f tmp.yaml
+      
+      DT_TENANT="${DT_TENANT_ID}.live.dynatrace.com"
+      
+      cat << EOF > dynatrace_secret.yaml
+      DT_TENANT: ${DT_TENANT}
+      DT_API_TOKEN: ${DT_API_TOKEN}
+      EOF
+
+      cat dynatrace_secret.yaml
+      
+      echo "Checking for secrets..."
+      kubectl get secret -n keptn dynatrace-credentials-${APPLICATION_SHORT_NAME} || true
+      echo $?
+
+      SECRET=$(kubectl get secret -n keptn dynatrace-credentials-${APPLICATION_SHORT_NAME} || true)
+      echo $?
+
+      if [ "$SECRET" = "" ]; then
+        echo "Creating new Secret"
+        kubectl create secret generic dynatrace-credentials-$APPLICATION_SHORT_NAME -n "keptn" --from-file=dynatrace-credentials=dynatrace_secret.yaml
+      else
+        echo "Recreating Secret"
+        kubectl delete secret dynatrace-credentials-$APPLICATION_SHORT_NAME -n "keptn"
+        kubectl create secret generic dynatrace-credentials-$APPLICATION_SHORT_NAME -n "keptn" --from-file=dynatrace-credentials=dynatrace_secret.yaml
+      fi
+    
+    fi 
+
+    cat dynatrace_sli.yaml
+    kubectl apply -f dynatrace_sli.yaml
+    keptn add-resource --project=$APPLICATION_SHORT_NAME --service=$APPLICATION_SHORT_NAME --stage=$CI_ENVIRONMENT_SLUG --resource=dynatrace_slo.yaml --resourceUri=slo.yaml  

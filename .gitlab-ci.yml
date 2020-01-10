@@ -15,10 +15,13 @@ include:
   - local: 'ci-includes/dt_get_problems.yaml'
   - local: 'ci-includes/dt_get_performance.yaml'
   - local: 'ci-includes/keptn_evaluation.yaml'
+  - local: 'ci-includes/dt_jmeter_loadtest.yaml'
+  - local: 'ci-includes/dt_create_keptn_qualitygate.yaml'
 
 stages:
   - build
   - deploy
+  - test
   - verify
   - chatops
 #  - rollout
@@ -67,17 +70,31 @@ dt_create_synthetic_check:
   only:
     - tags  
 
+create-keptn-qualitygate:
+  environment:
+    name: test
+  when: manual
+
+generate-load:    
+  environment:
+    name: test
+  when: manual
+
 keptn_evaluation:
   environment:
     name: test
   when: manual  
   start_in: 10 minutes  
   when: delayed    
+  only:
+    - tags    
 
 dt_get_problems:
   environment:
     name: test
-  when: manual
+  #when: manual
+  only:
+    - tags  
 
 dt_performance:
   only:
@@ -89,7 +106,7 @@ deploy-to-prod:
   only: [chat, tags]
   when: manual
   script:
-    - echo "ChatOps Stage - Deploy to Prod"
+    - echo "ChatOps Stage - Deploy to Prod"    
 
 #rollout-to-prod:
 #  stage: rollout

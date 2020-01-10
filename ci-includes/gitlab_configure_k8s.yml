@@ -6,5 +6,5 @@ gitlab_configure_k8s:
   script: |
       curl -s https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/scripts/configure-gitlab.sh -o configure-gitlab.sh
       chmod +x configure-gitlab.sh
-      ./configure-tenant.sh
+      ./configure-gitlab.sh
       
