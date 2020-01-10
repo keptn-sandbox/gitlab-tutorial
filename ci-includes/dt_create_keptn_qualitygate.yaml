@@ -37,33 +37,33 @@ create-keptn-qualitygate:
       EOF
       cat tmp.yaml
       kubectl apply -f tmp.yaml
-      
-      DT_TENANT="${DT_TENANT_ID}.live.dynatrace.com"
-      
-      cat << EOF > dynatrace_secret.yaml
-      DT_TENANT: ${DT_TENANT}
-      DT_API_TOKEN: ${DT_API_TOKEN}
-      EOF
+    fi
 
-      cat dynatrace_secret.yaml
-      
-      echo "Checking for secrets..."
-      kubectl get secret -n keptn dynatrace-credentials-${APPLICATION_SHORT_NAME} || true
-      echo $?
+    DT_TENANT="${DT_TENANT_ID}.live.dynatrace.com"
+    
+    cat << EOF > dynatrace_secret.yaml
+    DT_TENANT: ${DT_TENANT}
+    DT_API_TOKEN: ${DT_API_TOKEN}
+    EOF
 
-      SECRET=$(kubectl get secret -n keptn dynatrace-credentials-${APPLICATION_SHORT_NAME} || true)
-      echo $?
+    cat dynatrace_secret.yaml
+    
+    echo "Checking for secrets..."
+    kubectl get secret -n keptn dynatrace-credentials-${APPLICATION_SHORT_NAME} || true
+    echo $?
 
-      if [ "$SECRET" = "" ]; then
-        echo "Creating new Secret"
-        kubectl create secret generic dynatrace-credentials-$APPLICATION_SHORT_NAME -n "keptn" --from-file=dynatrace-credentials=dynatrace_secret.yaml
-      else
-        echo "Recreating Secret"
-        kubectl delete secret dynatrace-credentials-$APPLICATION_SHORT_NAME -n "keptn"
-        kubectl create secret generic dynatrace-credentials-$APPLICATION_SHORT_NAME -n "keptn" --from-file=dynatrace-credentials=dynatrace_secret.yaml
-      fi    
-    fi 
+    SECRET=$(kubectl get secret -n keptn dynatrace-credentials-${APPLICATION_SHORT_NAME} || true)
+    echo $?
 
+    if [ "$SECRET" = "" ]; then
+      echo "Creating new Secret"
+      kubectl create secret generic dynatrace-credentials-$APPLICATION_SHORT_NAME -n "keptn" --from-file=dynatrace-credentials=dynatrace_secret.yaml
+    else
+      echo "Recreating Secret"
+      kubectl delete secret dynatrace-credentials-$APPLICATION_SHORT_NAME -n "keptn"
+      kubectl create secret generic dynatrace-credentials-$APPLICATION_SHORT_NAME -n "keptn" --from-file=dynatrace-credentials=dynatrace_secret.yaml
+    fi    
+  
     cat dynatrace_sli.yaml
     kubectl apply -f dynatrace_sli.yaml
     keptn add-resource --project=$APPLICATION_SHORT_NAME --service=$APPLICATION_SHORT_NAME --stage=$CI_ENVIRONMENT_SLUG --resource=dynatrace_slo.yaml --resourceUri=slo.yaml  
