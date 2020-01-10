@@ -21,6 +21,7 @@ create-keptn-qualitygate:
 
     # If not:
     if [ "$service_exists" = "" ]; then
+      echo "Keptn project not found. Creating a new project and service..."
       keptn create project $APPLICATION_SHORT_NAME --shipyard=./shipyard.yaml --git-user=$GITLAB_USER_LOGIN --git-token="${KEPTN_GL_TOKEN}" --git-remote-url=$KEPTN_GL_REPO
       keptn create service $APPLICATION_SHORT_NAME --project=$APPLICATION_SHORT_NAME
 
@@ -60,8 +61,7 @@ create-keptn-qualitygate:
         echo "Recreating Secret"
         kubectl delete secret dynatrace-credentials-$APPLICATION_SHORT_NAME -n "keptn"
         kubectl create secret generic dynatrace-credentials-$APPLICATION_SHORT_NAME -n "keptn" --from-file=dynatrace-credentials=dynatrace_secret.yaml
-      fi
-    
+      fi    
     fi 
 
     cat dynatrace_sli.yaml
