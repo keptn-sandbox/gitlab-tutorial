@@ -68,8 +68,8 @@ dt_create_deployment_event:
 dt_create_alerting:
   environment:
     name: test
-  only:
-    - tags
+  #only:
+  #  - tags
 
 dt_create_synthetic_check:
   variables:
