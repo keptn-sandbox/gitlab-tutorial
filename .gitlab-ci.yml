@@ -17,7 +17,7 @@ include:
   - local: 'ci-includes/keptn_evaluation.yaml'
   - local: 'ci-includes/dt_jmeter_loadtest.yaml'
   - local: 'ci-includes/dt_create_keptn_qualitygate.yaml'
-  - local: 'ci-includes/dt_create_create_alerting.yaml'
+  - local: 'ci-includes/dt_create_alerting.yaml'
 
 stages:
   - build
@@ -70,7 +70,7 @@ dt_create_alerting:
     name: test
   only:
     - tags
-    
+
 dt_create_synthetic_check:
   variables:
     TYPE: PRIVATE
