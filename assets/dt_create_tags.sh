@@ -8,6 +8,7 @@ DT_API_TOKEN=$2
 curl -s -o keptn_project.json https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/keptn_project.json
 curl -s -o keptn_service.json https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/keptn_service.json
 curl -s -o keptn_stage.json https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/keptn_stage.json
+curl -s -o keptn_deployment.json https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/keptn_deployment.json
 
 API="https://${DT_TENANT_ID}.live.dynatrace.com/api/config/v1/autoTags"
 
@@ -29,5 +30,11 @@ curl -s -H "Authorization: Api-Token ${DT_API_TOKEN}" \
     -H 'Content-Type: application/json' \
     -X POST ${API} \
     -d @keptn_stage.json
+
+echo "Creating keptn_deployment tagging rule..."
+curl -s -H "Authorization: Api-Token ${DT_API_TOKEN}" \
+    -H 'Content-Type: application/json' \
+    -X POST ${API} \
+    -d @keptn_deployment.json
 
 echo "Done!"
