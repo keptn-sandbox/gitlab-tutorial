@@ -4,7 +4,7 @@
     "alertingProfile": "${PROFILE_ID}",
     "active": true,
     "url": "${SLACK_WEBHOOK}",
-    "channel": "#sample-app",
+    "channel": "#${SLACK_CHANNEL}",
     "title": "{State} - {ProblemSeverity} - {ProblemTitle}\n\n{ProblemDetailsText}\n\nPlease see details in Dynatrace at {ProblemURL}\n"
   }
   
