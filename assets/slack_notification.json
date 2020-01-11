@@ -1,0 +1,10 @@
+{
+    "type": "SLACK",
+    "name": "${APPLICATION_SHORT_NAME}-GITLAB",
+    "alertingProfile": "${PROFILE_ID}",
+    "active": true,
+    "url": "${SLACK_WEBHOOK}",
+    "channel": "#sample-app",
+    "title": "{State} - {ProblemSeverity} - {ProblemTitle}\n\n{ProblemDetailsText}\n\nPlease see details in Dynatrace at {ProblemURL}\n"
+  }
+  

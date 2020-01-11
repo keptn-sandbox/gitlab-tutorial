@@ -1,0 +1,89 @@
+{
+  "displayName": "${APPLICATION_SHORT_NAME}-GITLAB",
+  "rules": [
+    {
+      "severityLevel": "AVAILABILITY",
+      "tagFilter": {
+        "includeMode": "INCLUDE_ALL",
+        "tagFilters": [
+          {
+            "context": "CONTEXTLESS",
+            "key": "keptn_service",
+            "value": "${APPLICATION_SHORT_NAME}"
+          }
+        ]
+      },
+      "delayInMinutes": 0
+    },
+    {
+      "severityLevel": "ERROR",
+      "tagFilter": {
+        "includeMode": "INCLUDE_ALL",
+        "tagFilters": [
+          {
+            "context": "CONTEXTLESS",
+            "key": "keptn_service",
+            "value": "${APPLICATION_SHORT_NAME}"
+          }
+        ]
+      },
+      "delayInMinutes": 0
+    },
+    {
+      "severityLevel": "RESOURCE_CONTENTION",
+      "tagFilter": {
+        "includeMode": "INCLUDE_ALL",
+        "tagFilters": [
+          {
+            "context": "CONTEXTLESS",
+            "key": "keptn_service",
+            "value": "${APPLICATION_SHORT_NAME}"
+          }
+        ]
+      },
+      "delayInMinutes": 0
+    },
+    {
+      "severityLevel": "CUSTOM_ALERT",
+      "tagFilter": {
+        "includeMode": "INCLUDE_ALL",
+        "tagFilters": [
+          {
+            "context": "CONTEXTLESS",
+            "key": "keptn_service",
+            "value": "${APPLICATION_SHORT_NAME}"
+          }
+        ]
+      },
+      "delayInMinutes": 0
+    },
+    {
+      "severityLevel": "MONITORING_UNAVAILABLE",
+      "tagFilter": {
+        "includeMode": "INCLUDE_ALL",
+        "tagFilters": [
+          {
+            "context": "CONTEXTLESS",
+            "key": "keptn_service",
+            "value": "${APPLICATION_SHORT_NAME}"
+          }
+        ]
+      },
+      "delayInMinutes": 0
+    },
+    {
+      "severityLevel": "PERFORMANCE",
+      "tagFilter": {
+        "includeMode": "INCLUDE_ALL",
+        "tagFilters": [
+          {
+            "context": "CONTEXTLESS",
+            "key": "keptn_service",
+            "value": "${APPLICATION_SHORT_NAME}"
+          }
+        ]
+      },
+      "delayInMinutes": 0
+    }
+  ]
+}
