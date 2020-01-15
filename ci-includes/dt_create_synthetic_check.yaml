@@ -25,67 +25,78 @@ dt_create_synthetic_check:
     export INGRESSHOST=$(kubectl -n ${CI_ENVIRONMENT_NAME} get ingress/${APPLICATION_SHORT_NAME}|tail -1|awk {'print $3'})
     API="https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/synthetic"
     ENDPOINT="http://${INGRESSHOST}${HEALTHENDPOINT}"
-    json_payload="
+    
+    json_payload='
       {
-      \"frequencyMin\": 15,
-      \"anomalyDetection\": {
-        \"outageHandling\": {
-          \"globalOutage\": true,
-          \"localOutage\": false,
-          \"localOutagePolicy\": {
-            \"affectedLocations\": 1,
-            \"consecutiveRuns\": 3
+      "frequencyMin": 5,
+      "anomalyDetection": {
+        "outageHandling": {
+          "globalOutage": true,
+          "localOutage": false,
+          "localOutagePolicy": {
+            "affectedLocations": 1,
+            "consecutiveRuns": 3
           }
         },
-        \"loadingTimeThresholds\": {
-          \"enabled\": false,
-          \"thresholds\": [
+        "loadingTimeThresholds": {
+          "enabled": false,
+          "thresholds": [
             {
-              \"type\": \"TOTAL\",
-              \"valueMs\": 10000
+              "type": "TOTAL",
+              "valueMs": 10000
             }
           ]
         }
       },
-      \"type\": \"HTTP\",
-      \"name\": \"${CI_ENVIRONMENT_SLUG} - ${APPLICATION_SHORT_NAME} - Ping\",
-      \"locations\": [
+      "type": "HTTP",
+      "name": "'${CI_ENVIRONMENT_SLUG}' - '${APPLICATION_SHORT_NAME}' - Ping",
+      "locations": [
         ${LOC}
       ],
-      \"enabled\": true,
-      \"script\": {
-        \"version\": "1.0",
-        \"requests\": [
+      "enabled": true,
+      "script": {
+        "version": "1.0",
+        "requests": [
           {
-            \"description\": \"${APPLICATION_SHORT_NAME}\",
-            \"url\": \"${ENDPOINT}\",
-            \"method\": \"GET\",
-            \"requestBody\": \"\",
-            \"configuration\": {
-              \"acceptAnyCertificate\": true,
-              \"followRedirects\": true
-            },
-            \"preProcessingScript\": \"\",
-            \"postProcessingScript\": \"\"
+            "description": "'${APPLICATION_SHORT_NAME}'",
+            "url": "'${ENDPOINT}'",
+            "method": "GET",
+            "requestBody": "",
+            "validation": {
+              "rules": [
+                {
+                  "value": ">=400",
+                  "passIfFound": false,
+                  "type": "httpStatusesList"
+                }
+              ],
+              "rulesChaining": "or"
+            },            
+            "configuration": {
+              "acceptAnyCertificate": true,
+              "followRedirects": true
+            },            
+            "preProcessingScript": "",
+            "postProcessingScript": ""
           }
         ]
       },
-      \"tags\": [
-        \"environment:${CI_ENVIRONMENT_SLUG}\",
-        \"app:${APPLICATION_SHORT_NAME}\",
-        \"keptn_stage:${CI_ENVIRONMENT_SLUG}\",
-        \"keptn_project:${APPLICATION_SHORT_NAME}\",
-        \"keptn_service:${APPLICATION_SHORT_NAME}\",
-        \"support_24x7:false\",
-        \"alert_group:ops\"
+      "tags": [
+        "environment:'${CI_ENVIRONMENT_SLUG}'",
+        "app:'${APPLICATION_SHORT_NAME}'",
+        "keptn_stage:'${CI_ENVIRONMENT_SLUG}'",
+        "keptn_project:'${APPLICATION_SHORT_NAME}'",
+        "keptn_service:'${APPLICATION_SHORT_NAME}'",
+        "support_24x7:false",
+        "alert_group:ops"
       ]
     }
-    "
+    '
 
     # Create a Syntetic
     echo $json_payload > syntetic.json  
     # Getting Syntetic Monitor by Tag
-    entityId=$(curl -s -X GET "${API}/monitors?tag=app:${APPLICATION_SHORT_NAME}&tag=environment:${CI_ENVIRONMENT_SLUG}" -H "Authorization: Api-Token ${DT_API_TOKEN}" | jq .monitors[0].entityId)
+    entityId=$(curl -s -X GET "${API}/monitors?tag=keptn_service:${APPLICATION_SHORT_NAME}&tag=keptn_stage:${CI_ENVIRONMENT_SLUG}" -H "Authorization: Api-Token ${DT_API_TOKEN}" | jq .monitors[0].entityId)
     # Remove Quotes from entityId
     entityId=$(echo "$entityId" | sed -e 's/^"//' -e 's/"$//')
 
