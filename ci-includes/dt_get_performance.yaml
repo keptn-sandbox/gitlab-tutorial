@@ -3,28 +3,28 @@ dt_performance:
   image: registry.gitlab.com/checkelmann/cicd-tools:latest  
   variables:
       THRESHOLD: 10
+      SERVICE_METRIC: "com.dynatrace.builtin:service.responsetime"
   start_in: 10 minutes  
   when: delayed
   script: |
-    entityId=$(curl -s -X GET "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/entity/services?tag=keptn_stage:${CI_ENVIRONMENT_SLUG}&tag=keptn_service:${APPLICATION_SHORT_NAME}&relativeTime=5mins" -H "Authorization: Api-Token ${DT_API_TOKEN}" | jq .[].entityId)
-    entityId=$(echo "$entityId" | sed -e 's/^"//' -e 's/"$//')
+    entityId=$(curl -s -X GET "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/entity/services?tag=keptn_stage:${CI_ENVIRONMENT_SLUG}&tag=keptn_service:${APPLICATION_SHORT_NAME}&relativeTime=5mins" -H "Authorization: Api-Token ${DT_API_TOKEN}" | jq -r .[].entityId)
     timeTo=$(curl -s -H "Authorization: Api-Token ${DT_API_TOKEN}"  "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/events?eventType=CUSTOM_DEPLOYMENT&entityId=${entityId}" | jq .events[0].startTime)
     timeFrom=$((timeTo - 10 * 60 * 1000))
     echo Last Deployment at $(date -d @$(echo "(${timeTo} + 500) / 1000" | bc)), getting timeseries from $(date -d @$(echo "(${timeFrom} + 500) / 1000" | bc))
     # Get Last 10 min
     curl -s -X GET \
-          "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/timeseries/com.dynatrace.builtin:service.responsetime?includeData=true&relativeTime=10mins&aggregationType=AVG&entity=${entityId}" \
+          "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/timeseries/${SERVICE_METRIC}?includeData=true&relativeTime=10mins&aggregationType=AVG&entity=${entityId}" \
           -H "Authorization: Api-Token ${DT_API_TOKEN}" | jq .dataResult.dataPoints.\"$entityId\" > after.json
     # Get 10 min before last deployment event
     curl -s -X GET \
-          "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/timeseries/com.dynatrace.builtin:service.responsetime?includeData=true&startTimestamp=${timeFrom}&endTimestamp=${timeTo}&aggregationType=AVG&entity=${entityId}" \
+          "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/timeseries/${SERVICE_METRIC}?includeData=true&startTimestamp=${timeFrom}&endTimestamp=${timeTo}&aggregationType=AVG&entity=${entityId}" \
           -H "Authorization: Api-Token ${DT_API_TOKEN}" | jq .dataResult.dataPoints.\"$entityId\" > before.json
 
     pct=$(python /compare.py)
     python /sendslack.py "Performance Report for ${APPLICATION_SHORT_NAME}" --attachment $(pwd)/report.png
 
     if [ $pct -ge ${THRESHOLD} ]; then
-        echo "Performance too slow with ${pct}%!"
+        echo "Performance too slow, measured difference of ${pct}%!"
         exit 1
     else
         echo "Performance OK with ${pct}%!"
