@@ -2,41 +2,27 @@ keptn_evaluation:
   stage: verify
   image: registry.gitlab.com/checkelmann/cicd-tools:latest  
   script: |
-    # Log into keptn
-    # ${CI_ENVIRONMENT_SLUG}&tag=app:${APPLICATION_SHORT_NAME}
+    # Log into keptn    
     KEPTN_ENDPOINT=https://api.keptn.$(kubectl get cm keptn-domain -n keptn -ojsonpath={.data.app_domain})
     KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 -d)
     keptn auth -a $KEPTN_API_TOKEN -e $KEPTN_ENDPOINT
 
-    # Get timestamp from last deployment event
-    #entityId=$(curl -s -X GET "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/entity/services?tag=environment:${CI_ENVIRONMENT_SLUG}&tag=app:${APPLICATION_SHORT_NAME}&relativeTime=5mins" -H "Authorization: Api-Token ${DT_API_TOKEN}" | jq .[].entityId)
-    #entityId=$(echo "$entityId" | sed -e 's/^"//' -e 's/"$//')
-    #timeTo=$(curl -s -H "Authorization: Api-Token ${DT_API_TOKEN}"  "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/events?eventType=CUSTOM_DEPLOYMENT&entityId=${entityId}" | jq .events[0].startTime)
-    #timeFrom=$((timeTo - 10 * 60 * 1000))
-    #echo Last Deployment at $(date -d @$(echo "(${timeTo} + 500) / 1000" | bc)), getting timeseries from $(date -d @$(echo "(${timeFrom} + 500) / 1000" | bc))
-
     # Start evaluation
     ctxid=$(keptn send event start-evaluation --project=${APPLICATION_SHORT_NAME} --service=${APPLICATION_SHORT_NAME} --stage=${CI_ENVIRONMENT_SLUG} --timeframe=10m|tee tk|grep "context:"|awk {'print $5'})
-    cat tk
-    #Starting to send a start-evaluation event to evaluate the service sampleapp in project sampleapp
-    #ID of Keptn context: 3e1aaaab-23a2-4fe6-812a-f9c12c9e575d
-
-    # Poll keptn API Endpoint with contextID to get evaluation status  
-    # Not Found:
-    # {"code":500,"message":"No Keptn sh.keptn.events.evaluation-done event found for context: 4e1aaaab-23a2-4fe6-812a-f9c12c9e575d"}
-    # Found and failed
-    # {"contenttype":"application/json","data":{"deploymentstrategy":"","evaluationdetails":{"indicatorResults":[{"score":0,"status":"fail","targets":[{"criteria":"\u003c=800","targetValue":0,"violated":true},{"criteria":"\u003c=+10%","targetValue":0,"violated":true},{"criteria":"\u003c600","targetValue":0,"violated":true}],"value":{"message":"end time must not be in the future","metric":"response_time_p95","success":false,"value":0}},{"score":0,"status":"info","targets":null,"value":{"message":"end time must not be in the future","metric":"throughput","success":false,"value":0}},{"score":0,"status":"info","targets":null,"value":{"message":"end time must not be in the future","metric":"error_rate","success":false,"value":0}},{"score":0,"status":"info","targets":null,"value":{"message":"end time must not be in the future","metric":"response_time_p50","success":false,"value":0}},{"score":0,"status":"info","targets":null,"value":{"message":"end time must not be in the future","metric":"response_time_p90","success":false,"value":0}}],"result":"fail","score":0,"sloFileContent":"Y29tcGFyaXNvbjoKICBhZ2dyZWdhdGVfZnVuY3Rpb246IGF2ZwogIGNvbXBhcmVfd2l0aDogc2luZ2xlX3Jlc3VsdAogIGluY2x1ZGVfcmVzdWx0X3dpdGhfc2NvcmU6IHBhc3MKICBudW1iZXJfb2ZfY29tcGFyaXNvbl9yZXN1bHRzOiAzCmZpbHRlcjogbnVsbApvYmplY3RpdmVzOgotIGtleV9zbGk6IGZhbHNlCiAgcGFzczoKICAtIGNyaXRlcmlhOgogICAgLSA8PSsxMCUKICAgIC0gPDYwMAogIHNsaTogcmVzcG9uc2VfdGltZV9wOTUKICB3YXJuaW5nOgogIC0gY3JpdGVyaWE6CiAgICAtIDw9ODAwCiAgd2VpZ2h0OiAxCi0ga2V5X3NsaTogZmFsc2UKICBwYXNzOiBudWxsCiAgc2xpOiB0aHJvdWdocHV0CiAgd2FybmluZzogbnVsbAogIHdlaWdodDogMQotIGtleV9zbGk6IGZhbHNlCiAgcGFzczogbnVsbAogIHNsaTogZXJyb3JfcmF0ZQogIHdhcm5pbmc6IG51bGwKICB3ZWlnaHQ6IDEKLSBrZXlfc2xpOiBmYWxzZQogIHBhc3M6IG51bGwKICBzbGk6IHJlc3BvbnNlX3RpbWVfcDUwCiAgd2FybmluZzogbnVsbAogIHdlaWdodDogMQotIGtleV9zbGk6IGZhbHNlCiAgcGFzczogbnVsbAogIHNsaTogcmVzcG9uc2VfdGltZV9wOTAKICB3YXJuaW5nOiBudWxsCiAgd2VpZ2h0OiAxCnNwZWNfdmVyc2lvbjogMC4xLjAKdG90YWxfc2NvcmU6CiAgcGFzczogOTAlCiAgd2FybmluZzogNzUlCg==","timeEnd":"2019-11-29T10:22:30.156Z","timeStart":"2019-11-29T10:12:30.156Z"},"project":"sampleapp","result":"fail","service":"sampleapp","stage":"test","teststrategy":"manual"},"id":"1603c30a-823f-498e-a1d0-ee9d6cfd4340","source":"lighthouse-service","specversion":"0.2","time":"2019-11-29T09:22:32.557Z","type":"sh.keptn.events.evaluation-done","shkeptncontext":"3e1aaaab-23a2-4fe6-812a-f9c12c9e575d"}
-    # Found and pass
-    # {"contenttype":"application/json","data":{"deploymentstrategy":"","evaluationdetails":{"indicatorResults":[{"score":1,"status":"pass","targets":[{"criteria":"\u003c=+10%","targetValue":186.30640506908065,"violated":false},{"criteria":"\u003c600","targetValue":600,"violated":false}],"value":{"metric":"response_time_p95","success":true,"value":169.36945915370967}},{"score":0,"status":"info","targets":null,"value":{"metric":"throughput","success":true,"value":1}},{"score":0,"status":"info","targets":null,"value":{"metric":"error_rate","success":true,"value":0}},{"score":0,"status":"info","targets":null,"value":{"metric":"response_time_p50","success":true,"value":0.6075295178067817}},{"score":0,"status":"info","targets":null,"value":{"metric":"response_time_p90","success":true,"value":168.3322319758899}},{"score":0,"status":"info","targets":null,"value":{"message":"Dynatrace API returned status code 404 - Metric could not be received.","metric":"rt_invoke_avg","success":false,"value":0}},{"score":0,"status":"info","targets":null,"value":{"message":"Dynatrace API returned status code 404 - Metric could not be received.","metric":"count_svccalls_invoke","success":false,"value":0}},{"score":0,"status":"info","targets":null,"value":{"message":"Dynatrace API returned status code 404 - Metric could not be received.","metric":"count_dbcalls_invoke","success":false,"value":0}}],"result":"pass","score":100,"sloFileContent":"Y29tcGFyaXNvbjoKICBhZ2dyZWdhdGVfZnVuY3Rpb246IGF2ZwogIGNvbXBhcmVfd2l0aDogc2luZ2xlX3Jlc3VsdAogIGluY2x1ZGVfcmVzdWx0X3dpdGhfc2NvcmU6IHBhc3MKICBudW1iZXJfb2ZfY29tcGFyaXNvbl9yZXN1bHRzOiAzCmZpbHRlcjogbnVsbApvYmplY3RpdmVzOgotIGtleV9zbGk6IGZhbHNlCiAgcGFzczoKICAtIGNyaXRlcmlhOgogICAgLSA8PSsxMCUKICAgIC0gPDYwMAogIHNsaTogcmVzcG9uc2VfdGltZV9wOTUKICB3YXJuaW5nOgogIC0gY3JpdGVyaWE6CiAgICAtIDw9ODAwCiAgd2VpZ2h0OiAxCi0ga2V5X3NsaTogZmFsc2UKICBwYXNzOiBudWxsCiAgc2xpOiB0aHJvdWdocHV0CiAgd2FybmluZzogbnVsbAogIHdlaWdodDogMQotIGtleV9zbGk6IGZhbHNlCiAgcGFzczogbnVsbAogIHNsaTogZXJyb3JfcmF0ZQogIHdhcm5pbmc6IG51bGwKICB3ZWlnaHQ6IDEKLSBrZXlfc2xpOiBmYWxzZQogIHBhc3M6IG51bGwKICBzbGk6IHJlc3BvbnNlX3RpbWVfcDUwCiAgd2FybmluZzogbnVsbAogIHdlaWdodDogMQotIGtleV9zbGk6IGZhbHNlCiAgcGFzczogbnVsbAogIHNsaTogcmVzcG9uc2VfdGltZV9wOTAKICB3YXJuaW5nOiBudWxsCiAgd2VpZ2h0OiAxCi0ga2V5X3NsaTogZmFsc2UKICBwYXNzOiBudWxsCiAgc2xpOiBydF9pbnZva2VfYXZnCiAgd2FybmluZzogbnVsbAogIHdlaWdodDogMQotIGtleV9zbGk6IGZhbHNlCiAgcGFzczogbnVsbAogIHNsaTogY291bnRfc3ZjY2FsbHNfaW52b2tlCiAgd2FybmluZzogbnVsbAogIHdlaWdodDogMQotIGtleV9zbGk6IGZhbHNlCiAgcGFzczogbnVsbAogIHNsaTogY291bnRfZGJjYWxsc19pbnZva2UKICB3YXJuaW5nOiBudWxsCiAgd2VpZ2h0OiAxCnNwZWNfdmVyc2lvbjogMC4xLjAKdG90YWxfc2NvcmU6CiAgcGFzczogOTAlCiAgd2FybmluZzogNzUlCg==","timeEnd":"2019-11-21T11:10:00.000Z","timeStart":"2019-11-21T11:00:00.000Z"},"project":"sample","result":"pass","service":"sampleservice","stage":"hardening","teststrategy":"manual"},"id":"c6ef3d94-a528-4f3d-85bd-5fe1183dd2c9","source":"lighthouse-service","specversion":"0.2","time":"2019-11-21T11:48:11.130Z","type":"sh.keptn.events.evaluation-done","shkeptncontext":"384dae76-2d31-41e6-9204-39f2c1513906"}
-    fin="0"
+    fin="0"    
     until [ "$fin" = "1" ]
     do
+        cnt=$((cnt + 1))
         status=$(curl -s -k -X GET "${KEPTN_ENDPOINT}/v1/event?keptnContext=${ctxid}&type=sh.keptn.events.evaluation-done" -H "accept: application/json" -H "x-token: ${KEPTN_API_TOKEN}"|jq .data.result)
         if [ "$status" = "null" ]; then
-            echo "Status null will wait..."
+            echo "The Keptn is still sailing around..."
             sleep 5
         else
             fin="1"
+        fi
+        if [ "$cnt" = "100" ]; then
+            echo "Keptn timed out evaluating your deployment!"
+            exit 1
         fi
     done
     if [ "$status" = "\"fail\"" ]; then

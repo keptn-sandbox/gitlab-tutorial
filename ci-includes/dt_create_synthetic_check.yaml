@@ -3,6 +3,7 @@ dt_create_synthetic_check:
   stage: deploy
   variables:
       GIT_STRATEGY: none
+      FREQUENCY: 5
   script: |
     # Getting Synthetic Check Locations
     curl -s -H "Authorization: Api-Token ${DT_API_TOKEN}" -X GET "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/synthetic/locations?type=${TYPE}" | jq . > locations.txt
@@ -20,15 +21,14 @@ dt_create_synthetic_check:
       fi
     done
 
-    export HEALTHENDPOINT=$(helm get ${APPLICATION_SHORT_NAME}|grep readinessProbe -A2|tail -n 1|awk '{print $2}')
-    # export INGRESSHOST=$(helm get ${APPLICATION_SHORT_NAME}|grep "host:"| head -1|awk '{print $3}')
+    export HEALTHENDPOINT=$(helm get ${APPLICATION_SHORT_NAME}|grep readinessProbe -A2|tail -n 1|awk '{print $2}')    
     export INGRESSHOST=$(kubectl -n ${CI_ENVIRONMENT_NAME} get ingress/${APPLICATION_SHORT_NAME}|tail -1|awk {'print $3'})
     API="https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/synthetic"
     ENDPOINT="http://${INGRESSHOST}${HEALTHENDPOINT}"
     
     json_payload='
       {
-      "frequencyMin": 5,
+      "frequencyMin": '${FREQUENCY}',
       "anomalyDetection": {
         "outageHandling": {
           "globalOutage": true,
@@ -101,13 +101,13 @@ dt_create_synthetic_check:
     entityId=$(echo "$entityId" | sed -e 's/^"//' -e 's/"$//')
 
     if [ "$entityId" == "null" ]; then
-        echo "No Syntetic found, create a new one."
+        echo "No Synthetic found, create a new one."
         curl -X POST "${API}/monitors" \
           -H "Authorization: Api-Token ${DT_API_TOKEN}" \
           -H 'Content-Type: application/json' \
           -d @syntetic.json  
     else
-        echo "Syntetic found with ID ${entityId} will update Monitor"
+        echo "Synthetic found with ID ${entityId}, update Monitor"
         curl -X PUT "${API}/monitors/${entityId}" \
           -H "Authorization: Api-Token ${DT_API_TOKEN}" \
           -H 'Content-Type: application/json' \
