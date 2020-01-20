@@ -75,6 +75,7 @@ dt_create_synthetic_check:
   variables:
     TYPE: PRIVATE
     LOCATIONS: 1
+    FREQUENCY: 1
   environment:
     name: test
   only:
