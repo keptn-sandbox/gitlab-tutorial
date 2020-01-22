@@ -16,7 +16,7 @@ spec:
   jobCleanUpPolicy: delete
   monitoring: true
   appinfo: 
-    appns: test 
+    appns: ${CI_ENVIRONMENT_SLUG} 
     # FYI, To see app label, apply kubectl get pods --show-labels
     applabel: "app.kubernetes.io/name=${APPLICATION_SHORT_NAME}" 
     appkind: deployment
@@ -36,4 +36,9 @@ spec:
       spec:
         components:
         - name: TARGET_CONTAINER
-          value: ${APPLICATION_SHORT_NAME}        
+          value: ${APPLICATION_SHORT_NAME}
+    - name: node-drain
+      spec:
+        components:
+        - name: APP_NODE
+          value: '${NODENAME}'
