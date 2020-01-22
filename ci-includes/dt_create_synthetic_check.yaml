@@ -5,6 +5,9 @@ dt_create_synthetic_check:
       GIT_STRATEGY: none
       FREQUENCY: 5
       TYPE: PRIVATE
+      LOCATIONS: 1
+      URL: detect
+      MANUALLYASSIGNEDAPPS:
   script: |
     # Getting Synthetic Check Locations
     curl -s -H "Authorization: Api-Token ${DT_API_TOKEN}" -X GET "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/synthetic/locations?type=${TYPE}" | jq . > locations.txt
@@ -22,11 +25,15 @@ dt_create_synthetic_check:
       fi
     done
 
-    export HEALTHENDPOINT=$(helm get ${APPLICATION_SHORT_NAME}|grep readinessProbe -A2|tail -n 1|awk '{print $2}')    
-    export INGRESSHOST=$(kubectl -n ${CI_ENVIRONMENT_NAME} get ingress/${APPLICATION_SHORT_NAME}|tail -1|awk {'print $3'})
-    API="https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/synthetic"
-    ENDPOINT="http://${INGRESSHOST}${HEALTHENDPOINT}"
-    
+    if [ "${URL}" == "detect" ]; then
+      export HEALTHENDPOINT=$(helm get ${APPLICATION_SHORT_NAME}|grep readinessProbe -A2|tail -n 1|awk '{print $2}')    
+      export INGRESSHOST=$(kubectl -n ${CI_ENVIRONMENT_NAME} get ingress/${APPLICATION_SHORT_NAME}|tail -1|awk {'print $3'})
+      API="https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/synthetic"
+      ENDPOINT="http://${INGRESSHOST}${HEALTHENDPOINT}"
+    else
+      ENDPOINT=$URL
+    fi
+
     json_payload='
       {
       "frequencyMin": '${FREQUENCY}',
@@ -87,10 +94,11 @@ dt_create_synthetic_check:
         "app:'${APPLICATION_SHORT_NAME}'",
         "keptn_stage:'${CI_ENVIRONMENT_SLUG}'",
         "keptn_project:'${APPLICATION_SHORT_NAME}'",
-        "keptn_service:'${APPLICATION_SHORT_NAME}'",
-        "support_24x7:false",
-        "alert_group:ops"
-      ]
+        "keptn_service:'${APPLICATION_SHORT_NAME}'"
+      ],
+      "manuallyAssignedApps": [
+        ${MANUALLYASSIGNEDAPPS}
+      ],
     }
     '
 

@@ -28,10 +28,10 @@ keptn_evaluation:
     if [ "$status" = "\"fail\"" ]; then
             echo "Keptn Quality Gate - Evaluation failed!"
             echo "For details visit the Bridge!"
-            python /sendslack.py "Keptn - Quality Gate evaluation failed! Please check the Bridge."
+            python /sendslack.py "Keptn - Quality Gate evaluation failed! Please check the Bridge and Pipeline ${CI_PIPELINE_URL}."
             exit 1
     else
-            python /sendslack.py "Keptn - Quality Gate evaluation succeeded."
+            python /sendslack.py "Keptn - Quality Gate evaluation succeeded for Pipeline ${CI_PIPELINE_URL}."
     fi
 
 

@@ -8,9 +8,6 @@ create-keptn-qualitygate:
     mkdir ~/.kube
     cp $KUBECONFIG ~/.kube/config    
 
-    # curl -o shipyard.yaml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/shipyard.yaml
-    # curl -o dynatrace_sli.yaml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/dynatrace_sli.yaml
-    # curl -o dynatrace_slo.yaml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/dynatrace_slo.yaml
     KEPTN_ENDPOINT=https://api.keptn.$(kubectl get cm keptn-domain -n keptn -ojsonpath={.data.app_domain})
     KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 -d)
     keptn auth -a $KEPTN_API_TOKEN -e $KEPTN_ENDPOINT
@@ -47,8 +44,6 @@ create-keptn-qualitygate:
     DT_API_TOKEN: ${DT_API_TOKEN}
     EOF
 
-    cat dynatrace_secret.yaml
-    
     echo "Checking for secrets..."
     kubectl get secret -n keptn dynatrace-credentials-${APPLICATION_SHORT_NAME} || true
     echo $?

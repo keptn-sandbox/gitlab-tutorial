@@ -11,3 +11,6 @@ after.json
 problems.json
 error.sh
 create_problem.sh
+chaos/chaosengine-*
+secret_*.yaml
+*.log

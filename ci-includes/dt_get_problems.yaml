@@ -8,17 +8,15 @@ dt_get_problems:
     if [ "$problems" == "null" ]; then
       echo "No problem was found with your deployment."
     else
-      problemid=$(echo $problems|jq .id)
-      problemid=$(echo "$problemid" | sed -e 's/^"//' -e 's/"$//')     
-      
-      echo "A problem was created after your deployment!"
+      problemid=$(echo $problems|jq -r .id)            
+      echo "A problem was detected by Dynatrace!"
       echo "Problem ID:"
       echo $problems|jq .id
       echo $problems|jq .rankedImpacts[0]
       echo "https://${DT_TENANT_ID}.live.dynatrace.com/#problems/problemdetails;pid=${problemid}"
-      python /sendslack.py "A problem has been detected with your deployment. Please check https://${DT_TENANT_ID}.live.dynatrace.com/#problems/problemdetails;pid=${problemid}"
+      python /sendslack.py "A problem has been detected by Dynatrace. Please check https://${DT_TENANT_ID}.live.dynatrace.com/#problems/problemdetails;pid=${problemid}"
       exit 1
     fi
-  #when: delayed
-  #start_in: 10 minutes  
+  when: delayed
+  start_in: 10 minutes  
 
