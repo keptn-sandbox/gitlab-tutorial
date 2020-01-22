@@ -49,5 +49,7 @@ kubectl describe chaosresult engine-${APPLICATION_SHORT_NAME}-node-drain -n ${CI
 kubectl uncordon ${NODENAME}
 
 # Clean up
+kubectl delete -f rbac.yaml -n ${CI_ENVIRONMENT_SLUG}
+kubectl delete -f https://hub.litmuschaos.io/api/chaos?file=charts/generic/experiments.yaml -n ${CI_ENVIRONMENT_SLUG}
 kubectl delete -f chaosengine-${APPLICATION_SHORT_NAME}.yaml -n ${CI_ENVIRONMENT_SLUG}
 rm chaosengine-${APPLICATION_SHORT_NAME}.yaml
