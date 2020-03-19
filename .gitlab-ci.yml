@@ -115,19 +115,24 @@ install-keptn:
     cluster_region=$(yq r cluster.yml metadata.region)
     curl -o creds.json https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/keptn_creds.json
     curl -o bridge.yaml https://raw.githubusercontent.com/keptn-workshops/workshop-utils/0.5.1/scripts/expose-bridge/manifests/bridge.yaml
+
     sed -i -- s/CLUSTER_NAME_PLACEHOLDER/${cluster_name}/g creds.json
     sed -i -- s/AWS_REGION/${cluster_region}/g creds.json
+
     mkdir ~/.kube
     cp $KUBECONFIG ~/.kube/config    
     eksctl utils update-coredns --name=${cluster_name} --region=${cluster_region} --approve
     echo "Waiting for CoreDNS Update..."
     sleep 20
-    keptn install --platform=eks -c=creds.json --keptn-version=0.6.0.beta2|tee inst.out
+    
+    keptn install --platform=eks -c=creds.json --keptn-version=0.6.1|tee inst.out
+    
     export ZONE_ID=$(aws route53 list-hosted-zones-by-name --dns-name=${AWS_ROUTE53_DOMAIN}|jq ".HostedZones[0].Id"|grep -o -P '(?<=hostedzone/).*(?=")')
     export KEPTN_ENDPOINT=$(cat inst.out|grep "set for"|awk {'print $13'})
     aws route53 change-resource-record-sets --hosted-zone-id "${ZONE_ID}" --change-batch "{\"Changes\":[{\"Action\":\"CREATE\",\"ResourceRecordSet\":{\"Name\":\"*.${AWS_ROUTE53_DOMAIN}.\",\"Type\":\"CNAME\",\"TTL\":60,\"ResourceRecords\":[{\"Value\":\"${KEPTN_ENDPOINT}\"}]}}]}" --region us-east-1
-    echo "Wait for DNS Record beeing updated"
+    echo "Wait for DNS Record being updated"
     sleep 100
+    
     echo y|keptn configure domain ${AWS_ROUTE53_DOMAIN} --keptn-version=release-0.6.0.beta2
     echo "Configure GitLab CI/CD Variable"
     export KEPTN_API=$(head -1 ~/.keptn/.keptn)
@@ -174,30 +179,19 @@ keptn-sli-service:
   script: |
     # Add Git and clone dynatrace-service repository
     cd ~
-    apk add git
-    git clone --branch 0.4.0 https://github.com/keptn-contrib/dynatrace-service --single-branch
     echo "Copy Kubeconfig to expected Keptn Location"
     mkdir ~/.kube
     cp $KUBECONFIG ~/.kube/config    
-    # Export DT_TENANT_ID and TOKEN as expected Env Vars
-    export DT_TENANT=$DT_TENANT_ID
+    echo "Install Dynatrace-Service"
+   
+    kubectl -n keptn create secret generic dynatrace --from-literal="DT_API_TOKEN=${DT_API_TOKEN}" --from-literal="DT_TENANT=${DT_TENANT_ID}.live.dynatrace.com" --from-literal="DT_PAAS_TOKEN=${DT_PAAS_TOKEN}"
+    kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/dynatrace-service/0.6.2/deploy/manifests/dynatrace-service/dynatrace-service.yaml
 
-    cd dynatrace-service/deploy/scripts
-    echo "Creating credentials file with CI Variables"
-    CREDS=./creds_dt.json
-    cat ./creds_dt.sav | sed 's~DYNATRACE_TENANT_PLACEHOLDER~'"$DT_TENANT_ID"'~' | \
-      sed 's~DYNATRACE_API_TOKEN~'"$DT_API_TOKEN"'~' | \
-      sed 's~DYNATRACE_PAAS_TOKEN~'"$DT_PAAS_TOKEN"'~' >> $CREDS    
+    echo "Install SLI Service..."       
+    kubectl apply -f https://raw.githubusercontent.com/keptn-contrib/dynatrace-sli-service/release-0.3.1/deploy/service.yaml
 
-    echo "Running deployDynatraceCommon.sh"
-    curl -o deployDynatraceCommon.sh https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/deployDynatraceCommon.sh
-    bash ./deployDynatraceCommon.sh    
-    cd ~
-    echo "Install SLI Service..."
-    mkdir sli-service
-    curl -s -o sli-service/distributor.yaml https://raw.githubusercontent.com/keptn-contrib/dynatrace-sli-service/release-0.1.0/deploy/distributor.yaml
-    curl -s -o sli-service/service.yaml https://raw.githubusercontent.com/keptn-contrib/dynatrace-sli-service/release-0.1.0/deploy/service.yaml
-    kubectl apply -f sli-service/
+    echo "Configure Dynatrace Tenant..."
+    keptn configure monitoring dynatrace
   when: manual  
 
 ###############################################################################
@@ -213,9 +207,6 @@ configure-quality-stage:
       GIT_STRATEGY: none
       APPLICATION_SHORT_NAME: sampleapp
   script: |
-    echo "Copy Kubeconfig to expected Keptn Location"
-    mkdir ~/.kube
-    cp $KUBECONFIG ~/.kube/config    
 
     curl -o shipyard.yaml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/shipyard.yaml
     curl -o dynatrace_sli.yaml https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/dynatrace_sli.yaml
@@ -228,17 +219,7 @@ configure-quality-stage:
     keptn create service $APPLICATION_SHORT_NAME --project=$APPLICATION_SHORT_NAME
 
     echo "Configure lighthouse"
-    cat << EOF > tmp.yaml
-    apiVersion: v1
-    data:
-      sli-provider: dynatrace
-    kind: ConfigMap
-    metadata:
-      name: lighthouse-config-${APPLICATION_SHORT_NAME}
-      namespace: keptn
-    EOF
-    cat tmp.yaml
-    kubectl apply -f tmp.yaml
+    keptn configure monitoring dynatrace --project=$APPLICATION_SHORT_NAME 
     
     DT_TENANT="${DT_TENANT_ID}.live.dynatrace.com"
     
