@@ -7,7 +7,6 @@ dt_create_synthetic_check:
       TYPE: PRIVATE
       LOCATIONS: 1
       URL: detect
-      MANUALLYASSIGNEDAPPS: ""
   script: |
     # Getting Synthetic Check Locations
     curl -s -H "Authorization: Api-Token ${DT_API_TOKEN}" -X GET "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/synthetic/locations?type=${TYPE}" | jq . > locations.txt
@@ -24,11 +23,6 @@ dt_create_synthetic_check:
         LOC=$LOC"\"${TL}\""
       fi
     done
-
-    if [ "$MANUALLYASSIGNEDAPPS" != "" ]; then
-      MANUALLYASSIGNEDAPPS='"manuallyAssignedApps": ['${MANUALLYASSIGNEDAPPS}'],'
-    fi
-    echo $MANUALLYASSIGNEDAPPS
 
     if [ "${URL}" == "detect" ]; then
       export HEALTHENDPOINT=$(helm get ${APPLICATION_SHORT_NAME}|grep readinessProbe -A2|tail -n 1|awk '{print $2}')    
@@ -101,7 +95,6 @@ dt_create_synthetic_check:
         "keptn_project:'${APPLICATION_SHORT_NAME}'",
         "keptn_service:'${APPLICATION_SHORT_NAME}'"
       ],
-      ${MANUALLYASSIGNEDAPPS}
     }
     '
 
