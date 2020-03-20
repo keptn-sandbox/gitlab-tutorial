@@ -121,7 +121,7 @@ Install Keptn:
     echo "Waiting for CoreDNS Update..."
     sleep 20
     
-    keptn install --platform=eks -c=creds.json --keptn-version=0.6.1|tee inst.out
+    keptn install --platform=eks -c=creds.json |tee inst.out
     
     export ZONE_ID=$(aws route53 list-hosted-zones-by-name --dns-name=${AWS_ROUTE53_DOMAIN}|jq ".HostedZones[0].Id"|grep -o -P '(?<=hostedzone/).*(?=")')
     export KEPTN_ENDPOINT=$(cat inst.out|grep "set for"|awk {'print $13'})
