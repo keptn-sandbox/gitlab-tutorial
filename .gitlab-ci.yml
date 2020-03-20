@@ -11,14 +11,10 @@
 include:  
   - project: 'checkelmann/dynatrace-pipeline'
     ref: master
-    file: '/ci-includes/dt_deploy-eks-oneagent.yml'
-  - project: 'checkelmann/dynatrace-pipeline'
-    ref: master
     file: '/ci-includes/dt_configure_tenant.yml'
 
 stages:
   - aws-eks-provisioning
-  - aws-eks-oneagent
   - configure-dynatrace
   - aws-eks-keptn
   - keptn-sli-service
@@ -41,7 +37,7 @@ stages:
 #################################################################
 # Provisioning Stage
 #################################################################
-create-aws-environment:
+Provision EKS Cluster:
   stage: aws-eks-provisioning
   image: registry.gitlab.com/checkelmann/cicd-tools:latest
   variables:
@@ -102,7 +98,7 @@ create-aws-environment:
     python /gitlab.py
   when: manual
 
-install-keptn:
+Install Keptn:
   stage: aws-eks-keptn
   image: registry.gitlab.com/checkelmann/cicd-tools:latest
   environment:
@@ -169,7 +165,7 @@ install-keptn:
 # Configure keptn SLI Service
 ###############################################################################
 
-keptn-sli-service:
+Install Keptn Services:
   stage: keptn-sli-service
   image: registry.gitlab.com/checkelmann/cicd-tools:latest
   environment:
@@ -198,7 +194,7 @@ keptn-sli-service:
 # Configure keptn SLI Service
 ###############################################################################
 
-configure-quality-stage:
+Configure Quality Gates:
   stage: configure-quality-stage
   image: registry.gitlab.com/checkelmann/cicd-tools:latest
   environment:
@@ -249,11 +245,6 @@ configure-quality-stage:
     kubectl apply -f dynatrace_sli.yaml
     keptn add-resource --project=$APPLICATION_SHORT_NAME --service=$APPLICATION_SHORT_NAME --stage=$CI_ENVIRONMENT_SLUG --resource=dynatrace_slo.yaml --resourceUri=slo.yaml
   when: manual  
-
-dt_deploy-eks-oneagent:
-  environment:
-    name: test
-  when: manual
 
 dt_configure_tenant:
   environment:
