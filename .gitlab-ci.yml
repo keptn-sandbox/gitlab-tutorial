@@ -130,9 +130,6 @@ Install Keptn:
     sleep 100
     
     echo y|keptn configure domain ${AWS_ROUTE53_DOMAIN}
-    echo "Configure GitLab CI/CD Variable"
-    export KEPTN_API=$(head -1 ~/.keptn/.keptn)
-    export KEPTN_TOKEN=$(tail -1 ~/.keptn/.keptn)
 
     # Create bridge    
     sed -i -- s/DOMAIN_PLACEHOLDER/${AWS_ROUTE53_DOMAIN}/g bridge.yaml
@@ -151,11 +148,11 @@ Install Keptn Services:
   variables:
       GIT_STRATEGY: none
   script: |
-    # Add Git and clone dynatrace-service repository
-    cd ~
-    echo "Copy Kubeconfig to expected Keptn Location"
-    mkdir ~/.kube
-    cp $KUBECONFIG ~/.kube/config    
+    # Log into keptn    
+    KEPTN_ENDPOINT=https://api.keptn.$(kubectl get cm keptn-domain -n keptn -ojsonpath={.data.app_domain})
+    KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 -d)
+    keptn auth -a $KEPTN_API_TOKEN -e $KEPTN_ENDPOINT
+
     echo "Install Dynatrace-Service"
    
     kubectl -n keptn create secret generic dynatrace --from-literal="DT_API_TOKEN=${DT_API_TOKEN}" --from-literal="DT_TENANT=${DT_TENANT_ID}.live.dynatrace.com" --from-literal="DT_PAAS_TOKEN=${DT_PAAS_TOKEN}"
