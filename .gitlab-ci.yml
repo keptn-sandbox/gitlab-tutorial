@@ -110,7 +110,7 @@ Install Keptn:
     cluster_name=$(yq r cluster.yml metadata.name)
     cluster_region=$(yq r cluster.yml metadata.region)
     curl -o creds.json https://gitlab.com/checkelmann/dynatrace-pipeline/raw/master/assets/keptn_creds.json
-    curl -o bridge.yaml https://raw.githubusercontent.com/keptn-workshops/workshop-utils/0.5.1/scripts/expose-bridge/manifests/bridge.yaml
+    curl -o bridge.yaml https://gitlab.com/checkelmann/dynatrace-pipeline/-/raw/master/assets/expose_bridge.yaml
 
     sed -i -- s/CLUSTER_NAME_PLACEHOLDER/${cluster_name}/g creds.json
     sed -i -- s/AWS_REGION/${cluster_region}/g creds.json
