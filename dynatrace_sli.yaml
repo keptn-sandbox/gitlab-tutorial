@@ -1,10 +1,6 @@
-kind: ConfigMap
-apiVersion: v1
-metadata:
-  name: dynatrace-sli-config-sampleapp
-  namespace: keptn
-data:
-  custom-queries: |
+---
+spec_version: '1.0'
+indicators:
     throughput: "builtin:service.requestCount.total:merge(0):count?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:direct)"
     error_rate: "builtin:service.errors.total.count:merge(0):avg?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:direct)"
     response_time_p50: "builtin:service.response.time:merge(0):percentile(50)?scope=tag(keptn_project:$PROJECT),tag(keptn_stage:$STAGE),tag(keptn_service:$SERVICE),tag(keptn_deployment:direct)"
