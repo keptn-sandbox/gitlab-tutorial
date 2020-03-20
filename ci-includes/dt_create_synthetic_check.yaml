@@ -25,6 +25,11 @@ dt_create_synthetic_check:
       fi
     done
 
+    if [ "$MANUALLYASSIGNEDAPPS" != "" ]; then
+      MANUALLYASSIGNEDAPPS='"manuallyAssignedApps": ['${MANUALLYASSIGNEDAPPS}'],'
+    fi
+    echo $MANUALLYASSIGNEDAPPS
+
     if [ "${URL}" == "detect" ]; then
       export HEALTHENDPOINT=$(helm get ${APPLICATION_SHORT_NAME}|grep readinessProbe -A2|tail -n 1|awk '{print $2}')    
       export INGRESSHOST=$(kubectl -n ${CI_ENVIRONMENT_NAME} get ingress/${APPLICATION_SHORT_NAME}|tail -1|awk {'print $3'})
@@ -96,9 +101,7 @@ dt_create_synthetic_check:
         "keptn_project:'${APPLICATION_SHORT_NAME}'",
         "keptn_service:'${APPLICATION_SHORT_NAME}'"
       ],
-      "manuallyAssignedApps": [
-        ${MANUALLYASSIGNEDAPPS}
-      ],
+      ${MANUALLYASSIGNEDAPPS}
     }
     '
 
