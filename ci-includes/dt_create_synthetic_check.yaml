@@ -100,6 +100,7 @@ dt_create_synthetic_check:
 
     # Create a Syntetic
     echo $json_payload > syntetic.json  
+    cat syntetic.json
     # Getting Syntetic Monitor by Tag
     entityId=$(curl -s -X GET "${API}/monitors?tag=keptn_service:${APPLICATION_SHORT_NAME}&tag=keptn_stage:${CI_ENVIRONMENT_SLUG}" -H "Authorization: Api-Token ${DT_API_TOKEN}" | jq -r .monitors[0].entityId)
 
