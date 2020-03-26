@@ -16,7 +16,8 @@ keptn_evaluation:
     until [ "$fin" = "1" ]
     do
         cnt=$((cnt + 1))
-        status=$(curl -s -k -X GET "${KEPTN_ENDPOINT}/v1/event?keptnContext=${ctxid}&type=sh.keptn.events.evaluation-done" -H "accept: application/json" -H "x-token: ${KEPTN_API_TOKEN}"|jq .data.result)
+        event_payload=$(curl -s -k -X GET "${KEPTN_ENDPOINT}/v1/event?keptnContext=${ctxid}&type=sh.keptn.events.evaluation-done" -H "accept: application/json" -H "x-token: ${KEPTN_API_TOKEN}")
+        status=$(echo $event_payload|jq .data.result)
         if [ "$status" = "null" ]; then
             echo "The Keptn is still sailing around..."
             sleep 5
@@ -28,16 +29,20 @@ keptn_evaluation:
             exit 1
         fi
     done
+    
+    eventid=$(echo $event_payload|jq -r .id)    
+    bridge_url="${KEPTN_BRIDGE}/${APPLICATION_SHORT_NAME}/${ctxid}/${eventid}"
+
     if [ "$status" = "\"fail\"" ]; then
             echo "Keptn Quality Gate - Evaluation failed!"
             echo "For details visit the Bridge!"
-            echo $KEPTN_BRIDGE
+            echo $bridge_url
             python /sendslack.py "Keptn - Quality Gate evaluation failed! Please check the Bridge and Pipeline ${CI_PIPELINE_URL}."
             exit 1
     else
             echo "Evaluation finished."
             echo "For details visit the Bridge!"
-            echo $KEPTN_BRIDGE
+            echo $bridge_url
             python /sendslack.py "Keptn - Quality Gate evaluation succeeded for Pipeline ${CI_PIPELINE_URL}."
     fi
 
