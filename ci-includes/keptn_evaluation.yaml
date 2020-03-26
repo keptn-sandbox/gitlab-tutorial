@@ -3,7 +3,10 @@ keptn_evaluation:
   image: registry.gitlab.com/checkelmann/cicd-tools:latest  
   script: |
     # Log into keptn    
-    KEPTN_ENDPOINT=https://api.keptn.$(kubectl get cm keptn-domain -n keptn -ojsonpath={.data.app_domain})
+    KEPTN_DOMAIN=$(kubectl get cm keptn-domain -n keptn -ojsonpath={.data.app_domain})
+    KEPTN_ENDPOINT=https://api.keptn.${KEPTN_DOMAIN}
+    KEPTN_BRIDGE=https://bridge.keptn.${KEPTN_DOMAIN}/project/${APPLICATION_SHORT_NAME}
+
     KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 -d)
     keptn auth -a $KEPTN_API_TOKEN -e $KEPTN_ENDPOINT
 
@@ -28,9 +31,13 @@ keptn_evaluation:
     if [ "$status" = "\"fail\"" ]; then
             echo "Keptn Quality Gate - Evaluation failed!"
             echo "For details visit the Bridge!"
+            echo $KEPTN_BRIDGE
             python /sendslack.py "Keptn - Quality Gate evaluation failed! Please check the Bridge and Pipeline ${CI_PIPELINE_URL}."
             exit 1
     else
+            echo "Evaluation finished."
+            echo "For details visit the Bridge!"
+            echo $KEPTN_BRIDGE
             python /sendslack.py "Keptn - Quality Gate evaluation succeeded for Pipeline ${CI_PIPELINE_URL}."
     fi
 
