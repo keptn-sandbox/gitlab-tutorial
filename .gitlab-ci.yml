@@ -94,7 +94,8 @@ deploy-application:
     # Log into keptn    
     KEPTN_DOMAIN=$(kubectl get cm keptn-domain -n keptn -ojsonpath={.data.app_domain})
     KEPTN_ENDPOINT=https://api.keptn.${KEPTN_DOMAIN}
-    KEPTN_BRIDGE=https://bridge.keptn.${KEPTN_DOMAIN}/project/${APPLICATION_SHORT_NAME}    
+    KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 -d)
+    keptn auth -a $KEPTN_API_TOKEN -e $KEPTN_ENDPOINT
     keptn send event -f deployment-finish.event
   only:
     - tags  
