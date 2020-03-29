@@ -76,12 +76,12 @@ deploy-application:
           "service": "'${APPLICATION_SHORT_NAME}'",
           "testStrategy": "performance",
           "deploymentStrategy": "direct",
-          "tag": "0.10.1",
-          "image": "docker.io/keptnexamples/carts",
+          "tag": "'${CI_COMMIT_TAG}'",
+          "image": "'${$CI_REGISTRY_IMAGE}'",
           "labels": {
             "testid": "'${CI_JOB_ID}'",
             "buildnr": "'${CI_JOB_ID}'",
-            "runby": "JohnDoe",
+            "runby": "'${CI_DEPLOY_USER}'",
             "SyntheticManuallyAssignedApp": "APPLICATION-EA7C4B59F27D43EB",
             "SyntheticFrequency": "5"
           },
