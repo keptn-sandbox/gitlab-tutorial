@@ -90,6 +90,11 @@ deploy-application:
       }
     '
     echo $deployment_finished_event > deployment-finish.event
+    
+    # Log into keptn    
+    KEPTN_DOMAIN=$(kubectl get cm keptn-domain -n keptn -ojsonpath={.data.app_domain})
+    KEPTN_ENDPOINT=https://api.keptn.${KEPTN_DOMAIN}
+    KEPTN_BRIDGE=https://bridge.keptn.${KEPTN_DOMAIN}/project/${APPLICATION_SHORT_NAME}    
     keptn send event -f deployment-finish.event
   only:
     - tags  
