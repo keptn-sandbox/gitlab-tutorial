@@ -21,8 +21,8 @@ keptn_evaluation:
     echo Last Deployment at $(date -d @${tsLastDeployment})
 
     # Start evaluation
-    echo "keptn send event start-evaluation --project=${APPLICATION_SHORT_NAME} --service=${APPLICATION_SHORT_NAME} --stage=${CI_ENVIRONMENT_SLUG} --timeframe=${tsDiffMin}m --start=[$tsStart]"
-    ctxid=$(keptn send event start-evaluation --project=${APPLICATION_SHORT_NAME} --service=${APPLICATION_SHORT_NAME} --stage=${CI_ENVIRONMENT_SLUG} --timeframe=${tsDiffMin}m --start=[$tsStart]|tee tk|grep "context:"|awk {'print $5'})
+    echo "keptn send event start-evaluation --project=${APPLICATION_SHORT_NAME} --service=${APPLICATION_SHORT_NAME} --stage=${CI_ENVIRONMENT_SLUG} --timeframe=${tsDiffMin}m --start=$tsStart"
+    ctxid=$(keptn send event start-evaluation --project=${APPLICATION_SHORT_NAME} --service=${APPLICATION_SHORT_NAME} --stage=${CI_ENVIRONMENT_SLUG} --timeframe=${tsDiffMin}m --start=$tsStart|tee tk|grep "context:"|awk {'print $5'})
     fin="0"    
     until [ "$fin" = "1" ]
     do
