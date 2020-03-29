@@ -61,7 +61,6 @@ deploy-application:
     export INGRESSHOST=$(kubectl -n ${CI_ENVIRONMENT_NAME} get ingress/${APPLICATION_SHORT_NAME}|tail -1|awk {'print $3'})    
     export ENDPOINT="http://${INGRESSHOST}${HEALTHENDPOINT}"
     export UUID=$(uuidgen)
-    export TESTID=$RANDOM
 
     deployment_finished_event='
       {
@@ -77,7 +76,7 @@ deploy-application:
           "testStrategy": "performance",
           "deploymentStrategy": "direct",
           "tag": "'${CI_COMMIT_TAG}'",
-          "image": "'${$CI_REGISTRY_IMAGE}'",
+          "image": "'${CI_REGISTRY_IMAGE}'",
           "labels": {
             "testid": "'${CI_JOB_ID}'",
             "buildnr": "'${CI_JOB_ID}'",
