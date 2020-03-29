@@ -56,6 +56,42 @@ deploy-application:
       --set ci_environment_slug=${CI_ENVIRONMENT_SLUG} \
       --set ci_project_path_slug=${CI_PROJECT_PATH_SLUG} \
       --namespace=${CI_ENVIRONMENT_SLUG} ${APPLICATION_SHORT_NAME} ./chart/
+
+    export HEALTHENDPOINT=$(helm get ${APPLICATION_SHORT_NAME}|grep readinessProbe -A2|tail -n 1|awk '{print $2}')    
+    export INGRESSHOST=$(kubectl -n ${CI_ENVIRONMENT_NAME} get ingress/${APPLICATION_SHORT_NAME}|tail -1|awk {'print $3'})    
+    export ENDPOINT="http://${INGRESSHOST}${HEALTHENDPOINT}"
+    export UUID=$(uuidgen)
+    export TESTID=$RANDOM
+
+    deployment_finished_event='
+      {
+        "type": "sh.keptn.events.deployment-finished",
+        "contenttype": "application/json",
+        "specversion": "0.2",
+        "source": "test-event",
+        "id": "'${UUID}'",
+        "data": {
+          "project": "'${APPLICATION_SHORT_NAME}'",
+          "stage": "'${CI_ENVIRONMENT_SLUG}'",
+          "service": "'${APPLICATION_SHORT_NAME}'",
+          "testStrategy": "performance",
+          "deploymentStrategy": "direct",
+          "tag": "0.10.1",
+          "image": "docker.io/keptnexamples/carts",
+          "labels": {
+            "testid": "'${CI_JOB_ID}'",
+            "buildnr": "'${CI_JOB_ID}'",
+            "runby": "JohnDoe",
+            "SyntheticManuallyAssignedApp": "APPLICATION-EA7C4B59F27D43EB",
+            "SyntheticFrequency": "5"
+          },
+          "deploymentURILocal": "'${ENDPOINT}'",
+          "deploymentURIPublic":  "'${ENDPOINT}'"
+        }
+      }
+    '
+    echo $deployment_finished_event > deployment-finish.event
+    keptn send event -f deployment-finish.event
   only:
     - tags  
 
