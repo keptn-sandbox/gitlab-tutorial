@@ -10,8 +10,18 @@ keptn_evaluation:
     KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 -d)
     keptn auth -a $KEPTN_API_TOKEN -e $KEPTN_ENDPOINT
 
+    # Get Timestamp of last deployment event
+    entityId=$(curl -s -X GET "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/entity/services?tag=keptn_stage:${CI_ENVIRONMENT_SLUG}&tag=keptn_service:${APPLICATION_SHORT_NAME}&relativeTime=5mins" -H "Authorization: Api-Token ${DT_API_TOKEN}" | jq -r .[].entityId)
+    tsLastDeployment=$(curl -s -H "Authorization: Api-Token ${DT_API_TOKEN}" "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/events?eventType=CUSTOM_DEPLOYMENT&entityId=${entityId}" | jq .events[0].startTime)
+    tsLastDeployment=$(echo "(${tsLastDeployment} + 500) / 1000" | bc)
+    tsStart=$(date -Is -d @${tsLastDeployment})
+    tsNow=$(date +%s)
+    tsDiffMin="$(($tsNow-$tsLastDeployment))"
+    tsDiffMin="$(($tsDiffMin/60))"
+    echo Last Deployment at $(date -d @${tsLastDeployment})
+
     # Start evaluation
-    ctxid=$(keptn send event start-evaluation --project=${APPLICATION_SHORT_NAME} --service=${APPLICATION_SHORT_NAME} --stage=${CI_ENVIRONMENT_SLUG} --timeframe=10m|tee tk|grep "context:"|awk {'print $5'})
+    ctxid=$(keptn send event start-evaluation --project=${APPLICATION_SHORT_NAME} --service=${APPLICATION_SHORT_NAME} --stage=${CI_ENVIRONMENT_SLUG} --timeframe=${tsDiffMin}m --start=[$tsStart]|tee tk|grep "context:"|awk {'print $5'})
     fin="0"    
     until [ "$fin" = "1" ]
     do
