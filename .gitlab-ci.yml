@@ -47,7 +47,7 @@ docker-build-master:
 deploy-application:
   image: registry.gitlab.com/checkelmann/cicd-tools:latest
   stage: deploy
-  needs: ["create-keptn-qualitygate"]
+  resource_group: test
   environment:
     name: test
   variables:
@@ -101,7 +101,7 @@ deploy-application:
     - tags  
 
 dt_create_deployment_event:
-  needs: ["deploy-application"]
+  resource_group: test
   environment:
     name: test
   only:
@@ -124,6 +124,7 @@ dt_create_alerting:
 #    - tags  
 
 create-keptn-qualitygate:
+  resource_group: test
   environment:
     name: test
   only:
