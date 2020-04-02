@@ -10,15 +10,15 @@ variables:
   SERVICE_NAME: sampleapp
 
 include: 
+  - local: 'ci-includes/dt_create_keptn_qualitygate.yaml'
   - local: 'ci-includes/dt_create_deployment_event.yaml'
+  - local: 'ci-includes/dt_create_alerting.yaml'
+  - local: 'ci-includes/dt_jmeter_loadtest.yaml'
   - local: 'ci-includes/dt_get_problems.yaml'  
   - local: 'ci-includes/keptn_evaluation.yaml'
-  - local: 'ci-includes/dt_jmeter_loadtest.yaml'
-  - local: 'ci-includes/dt_create_keptn_qualitygate.yaml'
-  - local: 'ci-includes/dt_create_alerting.yaml'
 
   #include:
-  #  - project: 'gorup/template_repo'
+  #  - project: 'group/template_repo'
   #    file: '/templates/keptn_evaluation.yml'  
   #    ref: v1.0.0 
   # ref could be a branch, a tag or a commit sha
