@@ -101,7 +101,7 @@ deploy-application:
           "labels": {
             "testid": "'${CI_JOB_ID}'",
             "buildnr": "'${CI_JOB_ID}'",
-            "runby": "'${CI_DEPLOY_USER}'",
+            "runby": "'${GITLAB_USER_NAME}'",
             "SyntheticManuallyAssignedApp": "APPLICATION-EA7C4B59F27D43EB",
             "SyntheticFrequency": "5"
           },
