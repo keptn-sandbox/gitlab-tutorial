@@ -1,10 +1,10 @@
 # dynatrace-pipeline
 
-This is a demo project how to integrate dynatrace within your CI/CD pipeline
+A demo application for demonstrating how to integrate keptn in your CI/CD Pipeline
 
-Branches:
+## Branches
 
-- master: This is the Pipeline for your application
+- master: keptn Demo Pipeline
 - keptn_infra: Infrastructure provisioning
   - EKS Cluster
   - Installation of Dynatrace Oneangent

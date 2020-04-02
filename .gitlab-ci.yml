@@ -16,6 +16,13 @@ include:
   - local: 'ci-includes/dt_jmeter_loadtest.yaml'
   - local: 'ci-includes/dt_create_keptn_qualitygate.yaml'
   - local: 'ci-includes/dt_create_alerting.yaml'
+
+  #include:
+  #  - project: 'gorup/template_repo'
+  #    file: '/templates/keptn_evaluation.yml'  
+  #    ref: v1.0.0 
+  # ref could be a branch, a tag or a commit sha
+
   # Replaced by keptn
   # - local: 'ci-includes/dt_create_synthetic_check.yaml'
   # - local: 'ci-includes/dt_get_performance.yaml'
@@ -26,7 +33,6 @@ stages:
   - test
   - verify
   - chatops
-#  - rollout
 
 #################################################################
 # Build Stage
@@ -53,9 +59,9 @@ docker-build-master:
 # Included from 'ci-includes/dt_create_keptn_qualitygate.yaml'
 create-keptn-qualitygate:
   environment:
-    name: test
+    name: test    # Environment name = keptn_stage
   only:
-    - tags  
+    - tags        # Run only on Tags
 
 # Deploy app and send sh.keptn.events.deployment-finished Event
 deploy-application:
@@ -111,6 +117,12 @@ deploy-application:
     KEPTN_ENDPOINT=https://api.keptn.${KEPTN_DOMAIN}
     KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 -d)
     keptn auth -a $KEPTN_API_TOKEN -e $KEPTN_ENDPOINT
+    
+    # Send the deployment event which will appear within the bridge and in Dynatrace
+    # It will trigger the keptn-synthetic service to create or update
+    # a synthetic service in dynatrace. In the past the check was configured by the
+    # 'ci-includes/dt_create_synthetic_check.yaml' template.
+    
     keptn send event -f deployment-finish.event
   only:
     - tags  
@@ -134,6 +146,10 @@ dt_create_alerting:
   only:
     - tags
 
+#################################################################
+# Load test stage
+#################################################################
+
 # Run Load Test if not using the keptn-jmeter service
 # Included from 'ci-includes/dt_jmeter_loadtest.yaml'
 generate-load:    
@@ -142,17 +158,23 @@ generate-load:
   only:
     - tags  
 
+#################################################################
+# Verify Stage
+#################################################################
+
 # Run the keptn Evaluation
 # Included from 'ci-includes/keptn_evaluation.yaml'
+# Out Load Test is really fast, so for this demo we will
+# start the job delayed.
 keptn_evaluation:
   environment:
     name: test
-  start_in: 5 minutes  
+  start_in: 5 minutes
   when: delayed    
   only:
     - tags    
 
-# Query Dynatrace API for detected Problems by Davis
+# Query Dynatrace API for detected problems by Davis
 # Included from 'ci-includes/dt_get_problems.yaml'
 dt_get_problems:
   environment:
