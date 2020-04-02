@@ -126,6 +126,10 @@ deploy-application:
     keptn send event -f deployment-finish.event
   only:
     - tags  
+  artifacts:
+    paths:
+      - deployment-finish.event
+    expire_in: 1 week    
 
 # Send deployment event to dynatrace
 # Will be obsolete when the keptn dynatrace-service could pass additional

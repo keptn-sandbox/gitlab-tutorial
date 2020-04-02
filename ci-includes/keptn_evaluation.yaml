@@ -10,25 +10,37 @@ keptn_evaluation:
     KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 -d)
     keptn auth -a $KEPTN_API_TOKEN -e $KEPTN_ENDPOINT
 
-    # Get Timestamp of last deployment event
+    # Get the entityId from our Service
     entityId=$(curl -s -X GET "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/entity/services?tag=keptn_stage:${CI_ENVIRONMENT_SLUG}&tag=keptn_service:${SERVICE_NAME}&relativeTime=5mins" -H "Authorization: Api-Token ${DT_API_TOKEN}" | jq -r .[].entityId)
+    
+    # Query DT Events API for the last deployment event 
+    # return the .events[0].startTime (timestamp)
     tsLastDeployment=$(curl -s -H "Authorization: Api-Token ${DT_API_TOKEN}" "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/events?eventType=CUSTOM_DEPLOYMENT&entityId=${entityId}" | jq .events[0].startTime)
     tsLastDeployment=$(echo "(${tsLastDeployment} + 500) / 1000" | bc)
+    
+    # Convert the start time for keptn like 2020-04-02T10:32:00
     tsStart=$(date -u +%Y-%m-%dT%H:%M:%S @$tsLastDeployment)
+    
+    # Get the current timestamp
     tsNow=$(date +%s)
+    
+    # Get the minutes between the deployment and now
     tsDiffMin="$(($tsNow-$tsLastDeployment))"
     tsDiffMin="$(($tsDiffMin/60))"
+
     echo Last Deployment at $(date -d @${tsLastDeployment})
 
-    # Start evaluation
+    # Start evaluation and return the keptn Context ID
     echo "keptn send event start-evaluation --project=${PROJECT_NAME} --service=${SERVICE_NAME} --stage=${CI_ENVIRONMENT_SLUG} --timeframe=${tsDiffMin}m --start=$tsStart"
     ctxid=$(keptn send event start-evaluation --project=${PROJECT_NAME} --service=${SERVICE_NAME} --stage=${CI_ENVIRONMENT_SLUG} --timeframe=${tsDiffMin}m --start=$tsStart|tee tk|grep "context:"|awk {'print $5'})
     fin="0"    
+
+    # Poll the keptn API every 5 seconds with the context ID for a evaluation-done event
     until [ "$fin" = "1" ]
     do
         cnt=$((cnt + 1))
-        event_payload=$(curl -s -k -X GET "${KEPTN_ENDPOINT}/v1/event?keptnContext=${ctxid}&type=sh.keptn.events.evaluation-done" -H "accept: application/json" -H "x-token: ${KEPTN_API_TOKEN}")
-        status=$(echo $event_payload|jq .data.result)
+        event_result=$(curl -s -k -X GET "${KEPTN_ENDPOINT}/v1/event?keptnContext=${ctxid}&type=sh.keptn.events.evaluation-done" -H "accept: application/json" -H "x-token: ${KEPTN_API_TOKEN}")
+        status=$(echo $event_result|jq .data.result)
         if [ "$status" = "null" ]; then
             echo "The Keptn is still sailing around..."
             sleep 5
@@ -41,20 +53,29 @@ keptn_evaluation:
         fi
     done
     
-    eventid=$(echo $event_payload|jq -r .id)    
+    # Save result as artifact
+    echo $event_result > sh.keptn.events.evaluation-done.json
+
+    # Get the Event ID from the evaluation-done result
+    eventid=$(echo $event_result|jq -r .id)
+
+    # Build keptn bridge deep link to the evaluation    
     bridge_url="${KEPTN_BRIDGE}/${SERVICE_NAME}/${ctxid}/${eventid}"
+
+    # Let the Pipeline fail when the evaluation failed. 
+    # GitLab will send a mail to the user with the bridge deep link.
 
     if [ "$status" = "\"fail\"" ]; then
             echo "Keptn Quality Gate - Evaluation failed!"
             echo "For details visit the Bridge!"
             echo $bridge_url
-            python /sendslack.py "Keptn - Quality Gate evaluation failed! Please check the Bridge and Pipeline ${CI_PIPELINE_URL}."
             exit 1
     else
             echo "Evaluation finished."
             echo "For details visit the Bridge!"
             echo $bridge_url
-            python /sendslack.py "Keptn - Quality Gate evaluation succeeded for Pipeline ${CI_PIPELINE_URL}."
     fi
-
-
+  artifacts:
+    paths:
+      - sh.keptn.events.evaluation-done.json
+    expire_in: 1 week    
