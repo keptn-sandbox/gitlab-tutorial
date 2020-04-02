@@ -9,7 +9,7 @@
           {
             "context": "CONTEXTLESS",
             "key": "keptn_service",
-            "value": "${PROJECT_NAME}"
+            "value": "${SERVICE_NAME}"
           }
         ]
       },
@@ -23,7 +23,7 @@
           {
             "context": "CONTEXTLESS",
             "key": "keptn_service",
-            "value": "${PROJECT_NAME}"
+            "value": "${SERVICE_NAME}"
           }
         ]
       },
@@ -37,7 +37,7 @@
           {
             "context": "CONTEXTLESS",
             "key": "keptn_service",
-            "value": "${PROJECT_NAME}"
+            "value": "${SERVICE_NAME}"
           }
         ]
       },
@@ -51,7 +51,7 @@
           {
             "context": "CONTEXTLESS",
             "key": "keptn_service",
-            "value": "${PROJECT_NAME}"
+            "value": "${SERVICE_NAME}"
           }
         ]
       },
@@ -65,7 +65,7 @@
           {
             "context": "CONTEXTLESS",
             "key": "keptn_service",
-            "value": "${PROJECT_NAME}"
+            "value": "${SERVICE_NAME}"
           }
         ]
       },
@@ -79,7 +79,7 @@
           {
             "context": "CONTEXTLESS",
             "key": "keptn_service",
-            "value": "${PROJECT_NAME}"
+            "value": "${SERVICE_NAME}"
           }
         ]
       },
