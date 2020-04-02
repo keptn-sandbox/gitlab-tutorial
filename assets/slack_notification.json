@@ -1,6 +1,6 @@
 {
     "type": "SLACK",
-    "name": "${APPLICATION_SHORT_NAME}-GITLAB",
+    "name": "${PROJECT_NAME}-GITLAB",
     "alertingProfile": "${PROFILE_ID}",
     "active": true,
     "url": "${SLACK_WEBHOOK}",

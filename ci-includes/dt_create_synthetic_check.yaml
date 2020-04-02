@@ -25,8 +25,8 @@ dt_create_synthetic_check:
     done
 
     if [ "${URL}" == "detect" ]; then
-      export HEALTHENDPOINT=$(helm get ${APPLICATION_SHORT_NAME}|grep readinessProbe -A2|tail -n 1|awk '{print $2}')    
-      export INGRESSHOST=$(kubectl -n ${CI_ENVIRONMENT_NAME} get ingress/${APPLICATION_SHORT_NAME}|tail -1|awk {'print $3'})
+      export HEALTHENDPOINT=$(helm get ${PROJECT_NAME}|grep readinessProbe -A2|tail -n 1|awk '{print $2}')    
+      export INGRESSHOST=$(kubectl -n ${CI_ENVIRONMENT_NAME} get ingress/${PROJECT_NAME}|tail -1|awk {'print $3'})
       API="https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/synthetic"
       ENDPOINT="http://${INGRESSHOST}${HEALTHENDPOINT}"
     else
@@ -56,7 +56,7 @@ dt_create_synthetic_check:
         }
       },
       "type": "HTTP",
-      "name": "'${CI_ENVIRONMENT_SLUG}' - '${APPLICATION_SHORT_NAME}' - Ping",
+      "name": "'${CI_ENVIRONMENT_SLUG}' - '${PROJECT_NAME}' - Ping",
       "locations": [
         '${LOC}'
       ],
@@ -65,7 +65,7 @@ dt_create_synthetic_check:
         "version": "1.0",
         "requests": [
           {
-            "description": "'${APPLICATION_SHORT_NAME}'",
+            "description": "'${PROJECT_NAME}'",
             "url": "'${ENDPOINT}'",
             "method": "GET",
             "requestBody": "",
@@ -90,10 +90,10 @@ dt_create_synthetic_check:
       },
       "tags": [
         "environment:'${CI_ENVIRONMENT_SLUG}'",
-        "app:'${APPLICATION_SHORT_NAME}'",
+        "app:'${PROJECT_NAME}'",
         "keptn_stage:'${CI_ENVIRONMENT_SLUG}'",
-        "keptn_project:'${APPLICATION_SHORT_NAME}'",
-        "keptn_service:'${APPLICATION_SHORT_NAME}'"
+        "keptn_project:'${PROJECT_NAME}'",
+        "keptn_service:'${SERVICE_NAME}'"
       ]
     }
     '
@@ -102,7 +102,7 @@ dt_create_synthetic_check:
     echo $json_payload > syntetic.json  
     cat syntetic.json
     # Getting Syntetic Monitor by Tag
-    entityId=$(curl -s -X GET "${API}/monitors?tag=keptn_service:${APPLICATION_SHORT_NAME}&tag=keptn_stage:${CI_ENVIRONMENT_SLUG}" -H "Authorization: Api-Token ${DT_API_TOKEN}" | jq -r .monitors[0].entityId)
+    entityId=$(curl -s -X GET "${API}/monitors?tag=keptn_service:${SERVICE_NAME}&tag=keptn_stage:${CI_ENVIRONMENT_SLUG}" -H "Authorization: Api-Token ${DT_API_TOKEN}" | jq -r .monitors[0].entityId)
 
     if [ "$entityId" == "null" ]; then
         echo "No Synthetic found, create a new one."

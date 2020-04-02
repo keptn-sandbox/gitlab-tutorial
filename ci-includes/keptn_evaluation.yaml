@@ -5,13 +5,13 @@ keptn_evaluation:
     # Log into keptn    
     KEPTN_DOMAIN=$(kubectl get cm keptn-domain -n keptn -ojsonpath={.data.app_domain})
     KEPTN_ENDPOINT=https://api.keptn.${KEPTN_DOMAIN}
-    KEPTN_BRIDGE=https://bridge.keptn.${KEPTN_DOMAIN}/project/${APPLICATION_SHORT_NAME}
+    KEPTN_BRIDGE=https://bridge.keptn.${KEPTN_DOMAIN}/project/${PROJECT_NAME}
 
     KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 -d)
     keptn auth -a $KEPTN_API_TOKEN -e $KEPTN_ENDPOINT
 
     # Get Timestamp of last deployment event
-    entityId=$(curl -s -X GET "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/entity/services?tag=keptn_stage:${CI_ENVIRONMENT_SLUG}&tag=keptn_service:${APPLICATION_SHORT_NAME}&relativeTime=5mins" -H "Authorization: Api-Token ${DT_API_TOKEN}" | jq -r .[].entityId)
+    entityId=$(curl -s -X GET "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/entity/services?tag=keptn_stage:${CI_ENVIRONMENT_SLUG}&tag=keptn_service:${SERVICE_NAME}&relativeTime=5mins" -H "Authorization: Api-Token ${DT_API_TOKEN}" | jq -r .[].entityId)
     tsLastDeployment=$(curl -s -H "Authorization: Api-Token ${DT_API_TOKEN}" "https://${DT_TENANT_ID}.live.dynatrace.com/api/v1/events?eventType=CUSTOM_DEPLOYMENT&entityId=${entityId}" | jq .events[0].startTime)
     tsLastDeployment=$(echo "(${tsLastDeployment} + 500) / 1000" | bc)
     tsStart=$(date -u +%Y-%m-%dT%H:%M:%S @$tsLastDeployment)
@@ -21,8 +21,8 @@ keptn_evaluation:
     echo Last Deployment at $(date -d @${tsLastDeployment})
 
     # Start evaluation
-    echo "keptn send event start-evaluation --project=${APPLICATION_SHORT_NAME} --service=${APPLICATION_SHORT_NAME} --stage=${CI_ENVIRONMENT_SLUG} --timeframe=${tsDiffMin}m --start=$tsStart"
-    ctxid=$(keptn send event start-evaluation --project=${APPLICATION_SHORT_NAME} --service=${APPLICATION_SHORT_NAME} --stage=${CI_ENVIRONMENT_SLUG} --timeframe=${tsDiffMin}m --start=$tsStart|tee tk|grep "context:"|awk {'print $5'})
+    echo "keptn send event start-evaluation --project=${PROJECT_NAME} --service=${SERVICE_NAME} --stage=${CI_ENVIRONMENT_SLUG} --timeframe=${tsDiffMin}m --start=$tsStart"
+    ctxid=$(keptn send event start-evaluation --project=${PROJECT_NAME} --service=${SERVICE_NAME} --stage=${CI_ENVIRONMENT_SLUG} --timeframe=${tsDiffMin}m --start=$tsStart|tee tk|grep "context:"|awk {'print $5'})
     fin="0"    
     until [ "$fin" = "1" ]
     do
@@ -42,7 +42,7 @@ keptn_evaluation:
     done
     
     eventid=$(echo $event_payload|jq -r .id)    
-    bridge_url="${KEPTN_BRIDGE}/${APPLICATION_SHORT_NAME}/${ctxid}/${eventid}"
+    bridge_url="${KEPTN_BRIDGE}/${SERVICE_NAME}/${ctxid}/${eventid}"
 
     if [ "$status" = "\"fail\"" ]; then
             echo "Keptn Quality Gate - Evaluation failed!"

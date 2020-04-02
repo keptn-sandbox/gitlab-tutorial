@@ -1,5 +1,5 @@
 {
-    "displayName": "${APPLICATION_SHORT_NAME}",
+    "displayName": "${PROJECT_NAME}",
     "rules": [
       {
         "severityLevel": "AVAILABILITY",
@@ -8,7 +8,7 @@
           "tagFilters": [
             {
               "context": "CONTEXTLESS",
-              "key": "app:${APPLICATION_SHORT_NAME}",
+              "key": "app:${PROJECT_NAME}",
               "value": null
             }
           ]
@@ -22,7 +22,7 @@
           "tagFilters": [
             {
               "context": "CONTEXTLESS",
-              "key": "app:${APPLICATION_SHORT_NAME}",
+              "key": "app:${PROJECT_NAME}",
               "value": null
             }
           ]

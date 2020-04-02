@@ -7,7 +7,7 @@ create_report:
     B4=$(cat before.perf)
     AFTER=$(cat after.perf)
 
-    export REPORT="<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>Performance Report for ${APPLICATION_SHORT_NAME} - Job ${CI_JOB_ID}</title>
+    export REPORT="<!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>Performance Report for ${PROJECT_NAME} - Job ${CI_JOB_ID}</title>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js'></script>\n
     </head><body>\n
     <p><canvas id=\"chart\"></canvas></p>\n
@@ -49,7 +49,7 @@ create_report:
         options: {\n
           title: {\n
             display: true,\n
-            text: 'Performance Report for ${APPLICATION_SHORT_NAME} - Job ${CI_JOB_ID}'\n
+            text: 'Performance Report for ${PROJECT_NAME} - Job ${CI_JOB_ID}'\n
           }\n
         }\n
     });\n

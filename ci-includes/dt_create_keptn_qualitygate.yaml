@@ -11,13 +11,13 @@ create-keptn-qualitygate:
     # Check if project and service is already configured
     # KEP Proposal for CLI Enhancements https://github.com/keptn/enhancement-proposals/pull/10
 
-    SERVICE=$(kubectl get cm lighthouse-config-${APPLICATION_SHORT_NAME} -n keptn || true)
+    SERVICE=$(kubectl get cm lighthouse-config-${PROJECT_NAME} -n keptn || true)
 
     # If not:
     if [ "$SERVICE" = "" ]; then
       echo "Keptn project not found. Creating a new project and service..."
-      keptn create project $APPLICATION_SHORT_NAME --shipyard=./shipyard.yaml --git-user=$GITLAB_USER_LOGIN --git-token="${KEPTN_GL_TOKEN}" --git-remote-url=$KEPTN_GL_REPO
-      keptn create service $APPLICATION_SHORT_NAME --project=$APPLICATION_SHORT_NAME
+      keptn create project $PROJECT_NAME --shipyard=./shipyard.yaml --git-user=$GITLAB_USER_LOGIN --git-token="${KEPTN_GL_TOKEN}" --git-remote-url=$KEPTN_GL_REPO
+      keptn create service $SERVICE_NAME --project=$PROJECT_NAME
 
       echo "Configure lighthouse"
     cat << EOF > tmp.yaml
@@ -26,7 +26,7 @@ create-keptn-qualitygate:
       sli-provider: dynatrace
     kind: ConfigMap
     metadata:
-      name: lighthouse-config-${APPLICATION_SHORT_NAME}
+      name: lighthouse-config-${PROJECT_NAME}
       namespace: keptn
     EOF
     
@@ -35,8 +35,8 @@ create-keptn-qualitygate:
     fi
 
     # Update SLI & SLO Resources
-    keptn add-resource --project=$APPLICATION_SHORT_NAME --service=$APPLICATION_SHORT_NAME --stage=$CI_ENVIRONMENT_SLUG --resource=dynatrace_slo.yaml --resourceUri=slo.yaml  
-    keptn add-resource --project=$APPLICATION_SHORT_NAME --stage=$CI_ENVIRONMENT_SLUG --service=$APPLICATION_SHORT_NAME --resource=dynatrace_sli.yaml --resourceUri=dynatrace/sli.yaml
+    keptn add-resource --project=$PROJECT_NAME --service=$SERVICE_NAME --stage=$CI_ENVIRONMENT_SLUG --resource=dynatrace_slo.yaml --resourceUri=slo.yaml  
+    keptn add-resource --project=$PROJECT_NAME --stage=$CI_ENVIRONMENT_SLUG --service=$SERVICE_NAME --resource=dynatrace_sli.yaml --resourceUri=dynatrace/sli.yaml
 
     DT_TENANT="${DT_TENANT_ID}.live.dynatrace.com"
     
@@ -48,17 +48,14 @@ create-keptn-qualitygate:
     EOF
 
     echo "Checking for secrets..."
-    kubectl get secret -n keptn dynatrace-credentials-${APPLICATION_SHORT_NAME} || true
-    echo $?
-
-    SECRET=$(kubectl get secret -n keptn dynatrace-credentials-${APPLICATION_SHORT_NAME} || true)
+    SECRET=$(kubectl get secret -n keptn dynatrace-credentials-${PROJECT_NAME} || true)
     echo $?
 
     if [ "$SECRET" = "" ]; then
       echo "Creating new Secret"
-      kubectl create secret generic dynatrace-credentials-$APPLICATION_SHORT_NAME -n "keptn" --from-file=dynatrace-credentials=dynatrace_secret.yaml
+      kubectl create secret generic dynatrace-credentials-$PROJECT_NAME -n "keptn" --from-file=dynatrace-credentials=dynatrace_secret.yaml
     else
       echo "Recreating Secret"
-      kubectl delete secret dynatrace-credentials-$APPLICATION_SHORT_NAME -n "keptn"
-      kubectl create secret generic dynatrace-credentials-$APPLICATION_SHORT_NAME -n "keptn" --from-file=dynatrace-credentials=dynatrace_secret.yaml
+      kubectl delete secret dynatrace-credentials-$PROJECT_NAME -n "keptn"
+      kubectl create secret generic dynatrace-credentials-$PROJECT_NAME -n "keptn" --from-file=dynatrace-credentials=dynatrace_secret.yaml
     fi    

@@ -4,7 +4,7 @@ dt_create_deployment_event:
   variables:
       GIT_STRATEGY: none
   script: |
-    echo ${APPLICATION_SHORT_NAME}-${CI_ENVIRONMENT_NAME}
+    echo ${PROJECT_NAME}-${CI_ENVIRONMENT_NAME}
     if [ "${CI_COMMIT_TAG}" == "" ]; then
       VERSION=${CI_COMMIT_SHORT_SHA}
     else
@@ -21,7 +21,7 @@ dt_create_deployment_event:
               {
                 "context": "CONTEXTLESS",
                 "key": "keptn_service", 
-                "value": "'${APPLICATION_SHORT_NAME}'"
+                "value": "'${SERVICE_NAME}'"
               }
             ]
         }
@@ -29,7 +29,7 @@ dt_create_deployment_event:
       "deploymentName":"'${CI_COMMIT_MESSAGE}'",
       "deploymentVersion":"'${VERSION}'",
       "deploymentProject":"'${CI_PROJECT_ID}'",
-      "remediationAction":"https://myrevertservice/revert?project='${CI_PROJECT_ID}'&service='${APPLICATION_SHORT_NAME}'-'${CI_ENVIRONMENT_SLUG}'&failed_jobid='${CI_JOB_ID}'",
+      "remediationAction":"https://myrevertservice/revert?project='${CI_PROJECT_ID}'&service='${SERVICE_NAME}'-'${CI_ENVIRONMENT_SLUG}'&failed_jobid='${CI_JOB_ID}'",
       "ciBackLink":"'${CI_PIPELINE_URL}'",
       "source":"GitLab",
       "customProperties":{

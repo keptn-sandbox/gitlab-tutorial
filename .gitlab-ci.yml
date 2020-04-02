@@ -6,18 +6,19 @@
 # Global Variables
 #################################################################
 variables:
-  APPLICATION_NAME: sample-app
-  APPLICATION_SHORT_NAME: sampleapp
+  PROJECT_NAME: sampleapp
+  SERVICE_NAME: sampleapp
 
 include: 
   - local: 'ci-includes/dt_create_deployment_event.yaml'
-  # - local: 'ci-includes/dt_create_synthetic_check.yaml'
-  - local: 'ci-includes/dt_get_problems.yaml'
-  #- local: 'ci-includes/dt_get_performance.yaml'
+  - local: 'ci-includes/dt_get_problems.yaml'  
   - local: 'ci-includes/keptn_evaluation.yaml'
   - local: 'ci-includes/dt_jmeter_loadtest.yaml'
   - local: 'ci-includes/dt_create_keptn_qualitygate.yaml'
   - local: 'ci-includes/dt_create_alerting.yaml'
+  # Replaced by keptn
+  # - local: 'ci-includes/dt_create_synthetic_check.yaml'
+  # - local: 'ci-includes/dt_get_performance.yaml'
 
 stages:
   - build
@@ -68,10 +69,12 @@ deploy-application:
     helm upgrade --install --wait \
       --set ci_environment_slug=${CI_ENVIRONMENT_SLUG} \
       --set ci_project_path_slug=${CI_PROJECT_PATH_SLUG} \
-      --namespace=${CI_ENVIRONMENT_SLUG} ${APPLICATION_SHORT_NAME} ./chart/
+      --set keptn_project=${PROJECT_NAME} \
+      --set keptn_service=${SERVICE_NAME} \
+      --namespace=${CI_ENVIRONMENT_SLUG} ${PROJECT_NAME} ./chart/
 
-    export HEALTHENDPOINT=$(helm get ${APPLICATION_SHORT_NAME}|grep readinessProbe -A2|tail -n 1|awk '{print $2}')    
-    export INGRESSHOST=$(kubectl -n ${CI_ENVIRONMENT_NAME} get ingress/${APPLICATION_SHORT_NAME}|tail -1|awk {'print $3'})    
+    export HEALTHENDPOINT=$(helm get ${PROJECT_NAME}|grep readinessProbe -A2|tail -n 1|awk '{print $2}')    
+    export INGRESSHOST=$(kubectl -n ${CI_ENVIRONMENT_NAME} get ingress/${PROJECT_NAME}|tail -1|awk {'print $3'})    
     export ENDPOINT="http://${INGRESSHOST}${HEALTHENDPOINT}"
     export UUID=$(uuidgen)
 
@@ -83,9 +86,9 @@ deploy-application:
         "source": "'${CI_PROJECT_PATH_SLUG}'",
         "id": "'${UUID}'",
         "data": {
-          "project": "'${APPLICATION_SHORT_NAME}'",
+          "project": "'${PROJECT_NAME}'",
           "stage": "'${CI_ENVIRONMENT_SLUG}'",
-          "service": "'${APPLICATION_SHORT_NAME}'",
+          "service": "'${SERVICE_NAME}'",
           "deploymentStrategy": "direct",
           "tag": "'${CI_COMMIT_TAG}'",
           "image": "'${CI_REGISTRY_IMAGE}'",

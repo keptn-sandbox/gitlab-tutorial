@@ -5,7 +5,7 @@ generate-load:
     GIT_STRATEGY: fetch
   script: |
     # Get Endpoint for Load test
-    export JMETER_URL=$(kubectl -n ${CI_ENVIRONMENT_NAME} get ingress/${APPLICATION_SHORT_NAME}|tail -1|awk {'print $3'})
+    export JMETER_URL=$(kubectl -n ${CI_ENVIRONMENT_NAME} get ingress/${PROJECT_NAME}|tail -1|awk {'print $3'})
     export JMETER_PORT=80
 
     /opt/apache-jmeter-5.2.1/bin/jmeter -n -t ./jmeter/load.jmx \

@@ -17,6 +17,8 @@ imagePullSecrets:
 ci_environment_slug: "test"
 ci_project_path_slug: "dynatrace-pipeline"
 ci_job_id: "1234"
+keptn_project: "sampleapp"
+keptn_service: "sampleapp"
 
 nameOverride: ""      
 fullnameOverride: ""
