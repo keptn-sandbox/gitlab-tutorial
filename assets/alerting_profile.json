@@ -65,7 +65,7 @@
           {
             "context": "CONTEXTLESS",
             "key": "keptn_service",
-            "value": "${APPLICATION_SHORT_NAME}"
+            "value": "${PROJECT_NAME}"
           }
         ]
       },
@@ -79,7 +79,7 @@
           {
             "context": "CONTEXTLESS",
             "key": "keptn_service",
-            "value": "${APPLICATION_SHORT_NAME}"
+            "value": "${PROJECT_NAME}"
           }
         ]
       },
