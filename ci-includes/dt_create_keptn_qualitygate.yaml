@@ -4,15 +4,12 @@ create-keptn-qualitygate:
   variables:
       GIT_STRATEGY: fetch
   script: |
-    echo "Copy Kubeconfig to expected Keptn Location"
-    mkdir ~/.kube
-    cp $KUBECONFIG ~/.kube/config    
-
     KEPTN_ENDPOINT=https://api.keptn.$(kubectl get cm keptn-domain -n keptn -ojsonpath={.data.app_domain})
     KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n keptn -ojsonpath={.data.keptn-api-token} | base64 -d)
     keptn auth -a $KEPTN_API_TOKEN -e $KEPTN_ENDPOINT
 
-    # Check if project and service is already installed
+    # Check if project and service is already configured
+    # KEP Proposal for CLI Enhancements https://github.com/keptn/enhancement-proposals/pull/10
 
     SERVICE=$(kubectl get cm lighthouse-config-${APPLICATION_SHORT_NAME} -n keptn || true)
 
@@ -37,8 +34,14 @@ create-keptn-qualitygate:
       kubectl apply -f tmp.yaml
     fi
 
+    # Update SLI & SLO Resources
+    keptn add-resource --project=$APPLICATION_SHORT_NAME --service=$APPLICATION_SHORT_NAME --stage=$CI_ENVIRONMENT_SLUG --resource=dynatrace_slo.yaml --resourceUri=slo.yaml  
+    keptn add-resource --project=$APPLICATION_SHORT_NAME --stage=$CI_ENVIRONMENT_SLUG --service=$APPLICATION_SHORT_NAME --resource=dynatrace_sli.yaml --resourceUri=dynatrace/sli.yaml
+
     DT_TENANT="${DT_TENANT_ID}.live.dynatrace.com"
     
+    # Add/Update Secrets for the Dynatrace SLI Provider
+
     cat << EOF > dynatrace_secret.yaml
     DT_TENANT: ${DT_TENANT}
     DT_API_TOKEN: ${DT_API_TOKEN}
@@ -59,6 +62,3 @@ create-keptn-qualitygate:
       kubectl delete secret dynatrace-credentials-$APPLICATION_SHORT_NAME -n "keptn"
       kubectl create secret generic dynatrace-credentials-$APPLICATION_SHORT_NAME -n "keptn" --from-file=dynatrace-credentials=dynatrace_secret.yaml
     fi    
-  
-    keptn add-resource --project=$APPLICATION_SHORT_NAME --service=$APPLICATION_SHORT_NAME --stage=$CI_ENVIRONMENT_SLUG --resource=dynatrace_slo.yaml --resourceUri=slo.yaml  
-    keptn add-resource --project=$APPLICATION_SHORT_NAME --stage=$CI_ENVIRONMENT_SLUG --service=$APPLICATION_SHORT_NAME --resource=dynatrace_sli.yaml --resourceUri=dynatrace/sli.yaml

@@ -44,10 +44,22 @@ docker-build-master:
   only:
     - tags
 
+#################################################################
+# Deploy Stage
+#################################################################
+
+# Create/Update keptn Qualitygate.
+# Included from 'ci-includes/dt_create_keptn_qualitygate.yaml'
+create-keptn-qualitygate:
+  environment:
+    name: test
+  only:
+    - tags  
+
+# Deploy app and send sh.keptn.events.deployment-finished Event
 deploy-application:
   image: registry.gitlab.com/checkelmann/cicd-tools:latest
   stage: deploy
-  resource_group: test
   environment:
     name: test
   variables:
@@ -100,18 +112,61 @@ deploy-application:
   only:
     - tags  
 
+# Send deployment event to dynatrace
+# Will be obsolete when the keptn dynatrace-service could pass additional
+# deployment informations like CI Backlink to Dynatrace
+# Included from 'ci-includes/dt_create_deployment_event.yaml'
 dt_create_deployment_event:
-  resource_group: test
   environment:
     name: test
   only:
     - tags
 
+# Create an additional alerting in Dynatrace
+# to send alerts to the GitLab ServiceDesk
+# Included from 'ci-includes/dt_create_alerting.yaml'
 dt_create_alerting:
   environment:
     name: test
   only:
     - tags
+
+# Run Load Test if not using the keptn-jmeter service
+# Included from 'ci-includes/dt_jmeter_loadtest.yaml'
+generate-load:    
+  environment:
+    name: test
+  only:
+    - tags  
+
+# Run the keptn Evaluation
+# Included from 'ci-includes/keptn_evaluation.yaml'
+keptn_evaluation:
+  environment:
+    name: test
+  start_in: 5 minutes  
+  when: delayed    
+  only:
+    - tags    
+
+# Query Dynatrace API for detected Problems by Davis
+# Included from 'ci-includes/dt_get_problems.yaml'
+dt_get_problems:
+  environment:
+    name: test
+  start_in: 5 minutes  
+  when: delayed    
+  only:
+    - tags  
+
+
+###############################################################
+# OLD JOBS WHICH ARE NOW HANDLED BY KEPTN
+###############################################################
+#dt_performance:
+#  only:
+#    - tags
+  #needs: ["dt_create_deployment_event"]
 
 #dt_create_synthetic_check:
 #  variables:
@@ -122,41 +177,6 @@ dt_create_alerting:
 #    name: test
 #  only:
 #    - tags  
-
-create-keptn-qualitygate:
-  resource_group: test
-  environment:
-    name: test
-  only:
-    - tags  
-
-generate-load:    
-  environment:
-    name: test
-  only:
-    - tags  
-
-keptn_evaluation:
-  environment:
-    name: test
-  when: manual  
-  start_in: 5 minutes  
-  when: delayed    
-  only:
-    - tags    
-
-dt_get_problems:
-  environment:
-    name: test
-  start_in: 5 minutes  
-  when: delayed    
-  only:
-    - tags  
-
-#dt_performance:
-#  only:
-#    - tags
-  #needs: ["dt_create_deployment_event"]
 
 deploy-to-prod:
   stage: chatops
